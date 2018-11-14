@@ -1,6 +1,7 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 from translate import pddl_parser
+from translate import pddl
 
 def custom_landmark_graph():
     landmarks = {
@@ -46,3 +47,5 @@ if __name__ == "__main__":
     task = pddl_parser.open(domain_filename='../domains/office/domain.pddl',
                             task_filename='../domains/office/t3.pddl')
     print(task.dump())
+
+    # condition = pddl.NegatedAtom()

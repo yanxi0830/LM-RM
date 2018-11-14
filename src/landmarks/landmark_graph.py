@@ -4,6 +4,7 @@ LandmarkGraph object based on Fast Downward
 import networkx as nx
 import matplotlib.pyplot as plt
 from enum import Enum
+from translate.pddl import Atom, NegatedAtom
 
 
 class LandmarkNode:
@@ -14,8 +15,8 @@ class LandmarkNode:
         # i.e. {node0: gn, node1: gn, ...}
         self.children = dict() if children is None else children
         self.parent = dict() if parent is None else parent
-        # TODO: sets of FactPair, not really
-        self.facts = set() if facts is None else facts
+        # TODO: only support Atom / NegatedAtom for now, need to add Conjunction/Disjunction later
+        self.facts = facts
         self.disjunctive = disj
         self.conjunctive = conj
         self.in_goal = in_goal
@@ -32,16 +33,22 @@ class LandmarkGraph:
     """
     This is the actual LandmarkGraph generated from Fast Downward
     """
+
     def __init__(self, nodes=None):
         # set of LandmarkNodes
         self.nodes = set() if nodes is None else nodes
         self.network = nx.DiGraph()
+        self._populate_network()
 
-    def _populate_graph(self):
+    def _populate_network(self):
         """
         TODO: construct the actual LandmarkGraph from node set
         :return:
         """
+        for n in self.nodes:
+            self.network.add_node(n.id)
+            for child_id in n.children.keys():
+                self.network.add_edge(n.id, child_id, attr=n.children[child_id])
 
 
 class EdgeType(Enum):
@@ -67,5 +74,84 @@ class LandmarkStatus(Enum):
     lm_needed_again = 2
 
 
+# def node0():
+#     node_id = 0
+#     children = None
+#     parent = {1: EdgeType(3), 2: EdgeType(3)}
+#     facts = Atom('delivered-mail', [])
+#     disj = False
+#     conj = False
+#     in_goal = True
+#
+#     return LandmarkNode(node_id, children, parent, facts, disj, conj, in_goal)
+#
+#
+# def node1():
+#     node_id = 1
+#     children = {0: 'gn'}
+#     parent = {3: 'gn'}
+#     facts = Atom('visited-mail', [])
+#     disj = False
+#     conj = False
+#     in_goal = False
+#
+#     return LandmarkNode(1, {0: EdgeType(3)}, {3: EdgeType(3)}, Atom('visited-mail', []), False, False, False)
+#
+#
+# def node2():
+#     node_id = 2
+#     children = {0: EdgeType(3)}
+#     parent = None
+#     facts = NegatedAtom('delivered-mail', [])
+#     disj = False
+#     conj = False
+#     in_goal = False
+#
+#     return LandmarkNode(node_id, children, parent, facts, disj, conj, in_goal)
+#
+#
+# def node3():
+#     node_id = 3
+#     children = {1: EdgeType(3)}
+#     parent = None
+#     facts = NegatedAtom('visited-mail', [])
+#     disj = False
+#     conj = False
+#     in_goal = False
+#
+#     return LandmarkNode(node_id, children, parent, facts, disj, conj, in_goal)
+
+def parse_node(line):
+    data = eval(line)
+    facts_list = data[3]
+    # ['NegatedAtom delivered-coffee()']
+    facts = set()
+    for fact_str in facts_list:
+        space_idx = fact_str.find(' ')
+        bracket_idx = fact_str.find('(')
+        fact_type = fact_str[:space_idx]
+        pred_id = fact_str[space_idx+1:bracket_idx]
+        args_list = list(eval(fact_str[bracket_idx:]))
+
+        expression = "{}('{}', {})".format(fact_type, pred_id, args_list)
+        literal = eval(expression)
+        facts.add(literal)
+
+    return LandmarkNode(data[0], data[1], data[2], facts, data[3], data[4], data[5])
+
+
 if __name__ == "__main__":
-    print("Hello")
+    nodes = set()
+    f = open('../../domains/office/landmark.txt')
+    lines = [l for l in f]
+    f.close()
+
+    for l in lines:
+        nodes.add(parse_node(l))
+
+    lm_graph = LandmarkGraph(nodes)
+
+    nx.draw_networkx(lm_graph.network, pos=nx.shell_layout(lm_graph.network), with_labels=True)
+    # nx.draw_networkx_edge_labels(lm_graph.network, pos=nx.shell_layout(lm_graph.network))
+
+    plt.show()

@@ -115,6 +115,7 @@ def parse_literal(alist, type_dict, predicate_dict, negated=False):
 
     pred_id, arity = _get_predicate_id_and_arity(
         alist[0], type_dict, predicate_dict)
+    print(pred_id, arity)
 
     if arity != len(alist) - 1:
         raise SystemExit("predicate used with wrong arity: (%s)"
