@@ -42,7 +42,7 @@ class LandmarkGraph:
 
     def _populate_network(self):
         """
-        TODO: construct the actual LandmarkGraph from node set
+        Construct the actual LandmarkGraph from node set
         :return:
         """
         for n in self.nodes:
@@ -73,53 +73,6 @@ class LandmarkStatus(Enum):
     lm_not_reached = 1
     lm_needed_again = 2
 
-
-# def node0():
-#     node_id = 0
-#     children = None
-#     parent = {1: EdgeType(3), 2: EdgeType(3)}
-#     facts = Atom('delivered-mail', [])
-#     disj = False
-#     conj = False
-#     in_goal = True
-#
-#     return LandmarkNode(node_id, children, parent, facts, disj, conj, in_goal)
-#
-#
-# def node1():
-#     node_id = 1
-#     children = {0: 'gn'}
-#     parent = {3: 'gn'}
-#     facts = Atom('visited-mail', [])
-#     disj = False
-#     conj = False
-#     in_goal = False
-#
-#     return LandmarkNode(1, {0: EdgeType(3)}, {3: EdgeType(3)}, Atom('visited-mail', []), False, False, False)
-#
-#
-# def node2():
-#     node_id = 2
-#     children = {0: EdgeType(3)}
-#     parent = None
-#     facts = NegatedAtom('delivered-mail', [])
-#     disj = False
-#     conj = False
-#     in_goal = False
-#
-#     return LandmarkNode(node_id, children, parent, facts, disj, conj, in_goal)
-#
-#
-# def node3():
-#     node_id = 3
-#     children = {1: EdgeType(3)}
-#     parent = None
-#     facts = NegatedAtom('visited-mail', [])
-#     disj = False
-#     conj = False
-#     in_goal = False
-#
-#     return LandmarkNode(node_id, children, parent, facts, disj, conj, in_goal)
 
 def parse_node(line):
     data = eval(line)

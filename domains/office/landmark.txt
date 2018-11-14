@@ -1,0 +1,8 @@
+(6, {3: EdgeType(3)}, {}, ['NegatedAtom delivered-coffee()'], False, False, False)
+(3, {}, {7: EdgeType(3), 6: EdgeType(3)}, ['Atom delivered-coffee()'], False, False, True)
+(4, {0: EdgeType(3)}, {}, ['NegatedAtom delivered-mail()'], False, False, False)
+(0, {}, {5: EdgeType(3), 4: EdgeType(3)}, ['Atom delivered-mail()'], False, False, True)
+(2, {7: EdgeType(3)}, {}, ['NegatedAtom visited-coffee()'], False, False, False)
+(7, {3: EdgeType(3)}, {2: EdgeType(3)}, ['Atom visited-coffee()'], False, False, False)
+(1, {5: EdgeType(3)}, {}, ['NegatedAtom visited-mail()'], False, False, False)
+(5, {0: EdgeType(3)}, {1: EdgeType(3)}, ['Atom visited-mail()'], False, False, False)
