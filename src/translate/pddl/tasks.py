@@ -58,15 +58,17 @@ class Task(object):
             for axiom in self.axioms:
                 axiom.dump()
 
+
 class Requirements(object):
     def __init__(self, requirements):
         self.requirements = requirements
         for req in requirements:
             assert req in (
-              ":strips", ":adl", ":typing", ":negation", ":equality",
-              ":negative-preconditions", ":disjunctive-preconditions",
-              ":existential-preconditions", ":universal-preconditions",
-              ":quantified-preconditions", ":conditional-effects",
-              ":derived-predicates", ":action-costs"), req
+                ":strips", ":adl", ":typing", ":negation", ":equality",
+                ":negative-preconditions", ":disjunctive-preconditions",
+                ":existential-preconditions", ":universal-preconditions",
+                ":quantified-preconditions", ":conditional-effects",
+                ":derived-predicates", ":action-costs"), req
+
     def __str__(self):
         return ", ".join(self.requirements)

@@ -8,6 +8,7 @@ except ImportError:
 import pddl
 from pddl_to_prolog import Rule, PrologProgram
 
+
 def test_normalization():
     prog = PrologProgram()
     prog.add_fact(pddl.Atom("at", ["foo", "bar"]))
@@ -15,11 +16,11 @@ def test_normalization():
     prog.add_fact(pddl.Atom("truck", ["segway"]))
     prog.add_rule(Rule([pddl.Atom("truck", ["?X"])], pddl.Atom("at", ["?X", "?Y"])))
     prog.add_rule(Rule([pddl.Atom("truck", ["X"]), pddl.Atom("location", ["?Y"])],
-                  pddl.Atom("at", ["?X", "?Y"])))
+                       pddl.Atom("at", ["?X", "?Y"])))
     prog.add_rule(Rule([pddl.Atom("truck", ["?X"]), pddl.Atom("location", ["?Y"])],
-                  pddl.Atom("at", ["?X", "?X"])))
+                       pddl.Atom("at", ["?X", "?X"])))
     prog.add_rule(Rule([pddl.Atom("p", ["?Y", "?Z", "?Y", "?Z"])],
-                  pddl.Atom("q", ["?Y", "?Y"])))
+                       pddl.Atom("q", ["?Y", "?Y"])))
     prog.add_rule(Rule([], pddl.Atom("foo", [])))
     prog.add_rule(Rule([], pddl.Atom("bar", ["X"])))
     prog.normalize()

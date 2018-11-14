@@ -25,7 +25,6 @@ removed, too. (See also the docstring of
 filter_unreachable_propositions.)
 """
 
-
 from __future__ import print_function
 
 from collections import defaultdict
@@ -34,6 +33,7 @@ from itertools import count
 import sas_tasks
 
 DEBUG = False
+
 
 # TODO:
 # This is all quite hackish and would be easier if the translator were
@@ -161,20 +161,24 @@ def build_dtgs(task):
 always_false = object()
 always_true = object()
 
+
 class Impossible(Exception):
     pass
+
 
 class TriviallySolvable(Exception):
     pass
 
+
 class DoesNothing(Exception):
     pass
 
+
 class VarValueRenaming(object):
     def __init__(self):
-        self.new_var_nos = []   # indexed by old var_no
-        self.new_values = []    # indexed by old var_no and old value
-        self.new_sizes = []     # indexed by new var_no
+        self.new_var_nos = []  # indexed by old var_no
+        self.new_values = []  # indexed by old var_no and old value
+        self.new_sizes = []  # indexed by new var_no
         self.new_var_count = 0
         self.num_removed_values = 0
 
@@ -271,7 +275,7 @@ class VarValueRenaming(object):
             for var, val in mutex.facts:
                 new_var_no, new_value = self.translate_pair((var, val))
                 if (new_value is not always_true and
-                    new_value is not always_false):
+                        new_value is not always_false):
                     new_facts.append((new_var_no, new_value))
             if len(new_facts) >= 2:
                 mutex.facts = new_facts
@@ -447,7 +451,7 @@ class VarValueRenaming(object):
 
         for cond_var, cond_value in new_cond:
             if (cond_var in conditions_dict and
-                conditions_dict[cond_var] != cond_value):
+                    conditions_dict[cond_var] != cond_value):
                 # This effect condition is not compatible with
                 # the applicability conditions.
                 return None
@@ -480,6 +484,7 @@ class VarValueRenaming(object):
                 assert new_var_no is not None
                 new_pairs.append((new_var_no, new_value))
         pairs[:] = new_pairs
+
 
 def build_renaming(dtgs):
     renaming = VarValueRenaming()

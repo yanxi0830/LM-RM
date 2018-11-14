@@ -709,24 +709,24 @@ def handle_sigxcpu(signum, stackframe):
     os._exit(TRANSLATE_OUT_OF_TIME)
 
 
-if __name__ == "__main__":
-    try:
-        signal.signal(signal.SIGXCPU, handle_sigxcpu)
-    except AttributeError:
-        print("Warning! SIGXCPU is not available on your platform. "
-            "This means that the planner cannot be gracefully terminated "
-            "when using a time limit, which, however, is probably "
-            "supported on your platform anyway.")
-    try:
-        # Reserve about 10 MB (in Python 2) of emergency memory.
-        # https://stackoverflow.com/questions/19469608/
-        emergency_memory = "x" * 10**7
-        main()
-    except MemoryError:
-        emergency_memory = ""
-        print()
-        print("Translator ran out of memory, traceback:")
-        print("=" * 79)
-        traceback.print_exc(file=sys.stdout)
-        print("=" * 79)
-        sys.exit(TRANSLATE_OUT_OF_MEMORY)
+# if __name__ == "__main__":
+#     try:
+#         signal.signal(signal.SIGXCPU, handle_sigxcpu)
+#     except AttributeError:
+#         print("Warning! SIGXCPU is not available on your platform. "
+#             "This means that the planner cannot be gracefully terminated "
+#             "when using a time limit, which, however, is probably "
+#             "supported on your platform anyway.")
+#     try:
+#         # Reserve about 10 MB (in Python 2) of emergency memory.
+#         # https://stackoverflow.com/questions/19469608/
+#         emergency_memory = "x" * 10**7
+#         main()
+#     except MemoryError:
+#         emergency_memory = ""
+#         print()
+#         print("Translator ran out of memory, traceback:")
+#         print("=" * 79)
+#         traceback.print_exc(file=sys.stdout)
+#         print("=" * 79)
+#         sys.exit(TRANSLATE_OUT_OF_MEMORY)

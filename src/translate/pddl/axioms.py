@@ -28,7 +28,7 @@ class Axiom(object):
     def instantiate(self, var_mapping, init_facts, fluent_facts):
         # The comments for Action.instantiate apply accordingly.
         arg_list = [self.name] + [var_mapping[par.name]
-                    for par in self.parameters[:self.num_external_parameters]]
+                                  for par in self.parameters[:self.num_external_parameters]]
         name = "(%s)" % " ".join(arg_list)
 
         condition = []

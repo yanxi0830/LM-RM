@@ -27,6 +27,7 @@ def parse_pddl_file(type, filename):
         raise SystemExit("Error: Could not parse %s file: %s\nReason: %s." %
                          (type, filename, e))
 
+
 def open(domain_filename=None, task_filename=None):
     task_filename = task_filename or options.task
     domain_filename = domain_filename or options.domain

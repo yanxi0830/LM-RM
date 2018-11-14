@@ -1,6 +1,7 @@
 import pddl
 import timers
 
+
 def handle_axioms(operators, axioms, goals):
     axioms_by_atom = get_axioms_by_atom(axioms)
 
@@ -14,11 +15,13 @@ def handle_axioms(operators, axioms, goals):
     axiom_layers = compute_axiom_layers(axioms, axiom_init)
     return axioms, list(axiom_init), axiom_layers
 
+
 def get_axioms_by_atom(axioms):
     axioms_by_atom = {}
     for axiom in axioms:
         axioms_by_atom.setdefault(axiom.effect, []).append(axiom)
     return axioms_by_atom
+
 
 def compute_axiom_layers(axioms, axiom_init):
     NO_AXIOM = -1
@@ -42,6 +45,7 @@ def compute_axiom_layers(axioms, axiom_init):
                     depends_on[effect_atom].add((condition_atom, +0))
 
     layers = dict([(atom, UNKNOWN_LAYER) for atom in depends_on])
+
     def find_level(atom, marker):
         layer = layers.get(atom, NO_AXIOM)
         if layer == NO_AXIOM:
@@ -60,12 +64,14 @@ def compute_axiom_layers(axioms, axiom_init):
                 layer = max(layer, find_level(condition_atom, marker - bonus) + bonus)
             layers[atom] = layer
         return layer
+
     for atom in depends_on:
         find_level(atom, FIRST_MARKER)
 
-    #for atom, layer in layers.iteritems():
+    # for atom, layer in layers.iteritems():
     #  print "Layer %d: %s" % (layer, atom)
     return layers
+
 
 def compute_necessary_axiom_literals(axioms_by_atom, operators, goal):
     necessary_literals = set()
@@ -73,7 +79,7 @@ def compute_necessary_axiom_literals(axioms_by_atom, operators, goal):
 
     def register_literals(literals, negated):
         for literal in literals:
-            if literal.positive() in axioms_by_atom:   # This is an axiom literal
+            if literal.positive() in axioms_by_atom:  # This is an axiom literal
                 if negated:
                     literal = literal.negate()
                 if literal not in necessary_literals:
@@ -96,6 +102,7 @@ def compute_necessary_axiom_literals(axioms_by_atom, operators, goal):
             register_literals(axiom.condition, literal.negated)
     return necessary_literals
 
+
 def get_axiom_init(axioms_by_atom, necessary_literals):
     result = set()
     for atom in axioms_by_atom:
@@ -104,6 +111,7 @@ def get_axiom_init(axioms_by_atom, necessary_literals):
             # assumption) unless it is only needed negatively.
             result.add(atom)
     return result
+
 
 def simplify_axioms(axioms_by_atom, necessary_literals):
     necessary_atoms = set([literal.positive() for literal in necessary_literals])
@@ -114,6 +122,7 @@ def simplify_axioms(axioms_by_atom, necessary_literals):
         new_axioms += axioms
     return new_axioms
 
+
 def remove_duplicates(alist):
     next_elem = 1
     for i in range(1, len(alist)):
@@ -121,6 +130,7 @@ def remove_duplicates(alist):
             alist[next_elem] = alist[i]
             next_elem += 1
     alist[next_elem:] = []
+
 
 def simplify(axioms):
     """Remove duplicate axioms, duplicates within axioms, and dominated axioms."""
@@ -139,8 +149,8 @@ def simplify(axioms):
     axioms_to_skip = set()
     for axiom in axioms:
         if id(axiom) in axioms_to_skip:
-            continue   # Required to keep one of multiple identical axioms.
-        if not axiom.condition: # empty condition: dominates everything
+            continue  # Required to keep one of multiple identical axioms.
+        if not axiom.condition:  # empty condition: dominates everything
             return [axiom]
         literals = iter(axiom.condition)
         dominated_axioms = axioms_by_literal[next(literals)]
@@ -151,6 +161,7 @@ def simplify(axioms):
                 axioms_to_skip.add(dominated_axiom)
     return [axiom for axiom in axioms if id(axiom) not in axioms_to_skip]
 
+
 def compute_negative_axioms(axioms_by_atom, necessary_literals):
     new_axioms = []
     for literal in necessary_literals:
@@ -159,6 +170,7 @@ def compute_negative_axioms(axioms_by_atom, necessary_literals):
         else:
             new_axioms += axioms_by_atom[literal]
     return new_axioms
+
 
 def negate(axioms):
     assert axioms
@@ -170,7 +182,7 @@ def negate(axioms):
             # empty condition, so it is always true and its negation
             # is always false.
             return []
-        elif len(condition) == 1: # Handle easy special case quickly.
+        elif len(condition) == 1:  # Handle easy special case quickly.
             new_literal = condition[0].negate()
             for result_axiom in result:
                 result_axiom.condition.append(new_literal)

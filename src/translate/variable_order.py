@@ -6,6 +6,7 @@ import heapq
 
 DEBUG = False
 
+
 class CausalGraph(object):
     """Weighted causal graph used for defining a variable order.
 
@@ -69,7 +70,7 @@ class CausalGraph(object):
 
     def get_strongly_connected_components(self):
         unweighted_graph = [[] for _ in range(self.num_variables)]
-        assert(len(self.weighted_graph) <= self.num_variables)
+        assert (len(self.weighted_graph) <= self.num_variables)
         for source, target_weights in self.weighted_graph.items():
             unweighted_graph[source] = sorted(target_weights.keys())
         sccs = list(SCC(unweighted_graph).get_result())
@@ -129,7 +130,7 @@ class SCC(object):
 
     def __init__(self, unweighted_graph):
         self.graph = unweighted_graph
-        self.BEGIN, self.CONTINUE, self.RETURN = 0, 1, 2 # "recursion" handling
+        self.BEGIN, self.CONTINUE, self.RETURN = 0, 1, 2  # "recursion" handling
 
     def get_result(self):
         self.indices = dict()
@@ -220,12 +221,12 @@ class MaxDAG(object):
             min_elem = None
             entries = weight_to_nodes[min_key]
             while (entries and
-                (min_elem is None or min_elem in done or
-                min_key > incoming_weights[min_elem])):
+                   (min_elem is None or min_elem in done or
+                    min_key > incoming_weights[min_elem])):
                 min_elem = entries.popleft()
             if not entries:
                 del weight_to_nodes[min_key]
-                heapq.heappop(weights) # remove min_key from heap
+                heapq.heappop(weights)  # remove min_key from heap
             if min_elem is None or min_elem in done:
                 # since we use lazy deletion from the heap weights,
                 # there can be weights with a "done" entry in
@@ -251,6 +252,7 @@ class MaxDAG(object):
 
 class VariableOrder(object):
     """Apply a given variable order to a SAS task."""
+
     def __init__(self, ordering):
         """Ordering is a list of variable numbers in the desired order.
 

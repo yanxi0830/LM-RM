@@ -17,6 +17,7 @@ SCRIPTS = [
     "translate.py",
 ]
 
+
 def test_scripts():
     for script in SCRIPTS:
         script = os.path.join(TRANSLATE_DIR, script)
