@@ -67,7 +67,7 @@ class EdgeType(Enum):
 
 class LandmarkStatus(Enum):
     """
-    TODO: not sure how to use this yet
+    TODO: not sure if this is useful
     """
     lm_reached = 0
     lm_not_reached = 1
@@ -77,14 +77,15 @@ class LandmarkStatus(Enum):
 def parse_node(line):
     data = eval(line)
     facts_list = data[3]
-    # ['NegatedAtom delivered-coffee()']
+    # ['NegatedAtom delivered-coffee()'] -> set of literals
     facts = set()
     for fact_str in facts_list:
         space_idx = fact_str.find(' ')
         bracket_idx = fact_str.find('(')
         fact_type = fact_str[:space_idx]
         pred_id = fact_str[space_idx+1:bracket_idx]
-        args_list = list(eval(fact_str[bracket_idx:]))
+        args_list = fact_str[bracket_idx+1:-1].split(',')
+        args_list = [x.strip() for x in args_list]
 
         expression = "{}('{}', {})".format(fact_type, pred_id, args_list)
         literal = eval(expression)

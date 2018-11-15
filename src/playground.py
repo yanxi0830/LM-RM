@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from translate import pddl_parser
 from translate import pddl
 
+
 def custom_landmark_graph():
     landmarks = {
         6: "NegatedAtom have-gold()",
