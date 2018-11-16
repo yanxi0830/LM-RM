@@ -1,7 +1,7 @@
 0
-(0,0,'!e&!m',ConstantRewardFunction(0))
+(0,0,'!e&!g',ConstantRewardFunction(0))
 (0,1,'e',ConstantRewardFunction(0))
-(0,2,'m',ConstantRewardFunction(1))
-(1,1,'!m',ConstantRewardFunction(0))
-(1,2,'m',ConstantRewardFunction(1))
+(0,2,'e&g',ConstantRewardFunction(1))
+(1,1,'!g',ConstantRewardFunction(0))
+(1,2,'g',ConstantRewardFunction(1))
 (2,2,'True',ConstantRewardFunction(0))

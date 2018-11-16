@@ -193,7 +193,6 @@ def run_qrm_and_save_policy(alg_name, tester, curriculum, num_times, show_print)
     learning_params = tester.learning_params
 
     # Running the tasks 'num_times'
-    time_init = time.time()
     for t in range(num_times):
         # Setting the random seed to 't'
         random.seed(t)
@@ -225,3 +224,64 @@ def run_qrm_and_save_policy(alg_name, tester, curriculum, num_times, show_print)
         # I think this can be used to test on a new task
         # Starting interaction with the environment
         # TODO: run the new task i.e. get reward of 1 when reaching goal propositions
+        print("Done! Computed {} policies (RMs)".format(len(tester.get_reward_machines())))
+        reward_machines = tester.get_reward_machines()
+        rm1 = reward_machines[1]    # task of delivering mail
+        rm3 = reward_machines[3]    # task of delivering coffee
+        landmark_rms = [1, 3]   # task_rm_id we are following
+
+        task = Game(tester.get_task_params('PLACEHOLDER'))
+        s1, s1_features = task.get_state_and_features()
+
+        # the initial state of all tasks
+        u1s = [reward_machines[rm].get_initial_state() for rm in landmark_rms]
+
+        curr_task = landmark_rms.pop(0)     # current RM we are following
+        curr_u1 = u1s.pop(0)
+        r_total = 0
+        for t in range(tester.testing_params.num_steps):
+            # Choosing an action using the right policy from current RM
+            a = policy_bank.get_best_action(curr_task, curr_u1, s1_features.reshape((1, num_features)), add_noise=False)
+
+            # Executing the action
+            task.execute_action(a)
+            s2, s2_features = task.get_state_and_features()
+            curr_u2 = reward_machines[curr_task].get_next_state(curr_u1, task.get_true_propositions())
+            u2s = []    # remaining RM states
+            for i, rm_id in enumerate(landmark_rms):
+                u2s.append(reward_machines[rm_id].get_next_state(u1s[i], task.get_true_propositions()))
+
+            r = reward_machines[curr_task].get_reward(curr_u1, curr_u2, s1, a, s2)
+
+            other_rewards = []
+            for i, rm_id in enumerate(landmark_rms):
+                other_rewards.append(reward_machines[rm_id].get_reward(u1s[i], u2s[i], s1, a, s2))
+
+            r_total += r * learning_params.gamma ** t
+
+            # Check game over
+            if task.is_env_game_over():
+                break
+
+            # Check if current landmark is reached
+            if reward_machines[curr_task].is_terminal_state(curr_u2):
+                if len(landmark_rms) == 0:
+                    print("New Composed Task Finished!")
+                    print("Steps:", t+1)
+                    print("Rewards:", r_total)
+                    break
+
+                # Go to next landmark (no dead-end so terminal state == goal)
+                curr_task = landmark_rms.pop(0)
+                curr_u1 = u1s.pop()
+            else:
+                # Moving to the next state
+                s1, s1_features, curr_u1 = s2, s2_features, curr_u2
+
+        print("ALL FINISHED")
+
+
+
+
+
+

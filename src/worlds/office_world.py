@@ -23,7 +23,6 @@ class OfficeWorld:
     def __init__(self, params):
         self._load_map()
         self.env_game_over = False
-        self.inventory = set()
 
     def execute_action(self, a):
         """
@@ -39,10 +38,6 @@ class OfficeWorld:
             if action == Actions.right: x += 1
         self.agent = (x, y)
 
-        # if stepped on coffee or mail, add to inventory
-        if self.agent in {(7, 4), (8, 2), (3, 6)}:
-            self.inventory.add(self.objects[self.agent])
-
     def get_actions(self):
         """
         Returns the list with the actions that the agent can perform
@@ -52,17 +47,8 @@ class OfficeWorld:
     def get_true_propositions(self):
         """
         Returns the string with the propositions that are True in this state
-        NEW: m = delivered-mail, h = delivered-coffee
         """
         ret = ""
-        # reached office with mail/coffee
-        if self.agent == (4, 4):
-            if 'e' in self.inventory and 'f' in self.inventory:
-                return "m&h"
-            if 'e' in self.inventory:
-                return "m"
-            if 'f' in self.inventory:
-                return 'h'
         if self.agent in self.objects:
             ret += self.objects[self.agent]
         return ret
@@ -123,7 +109,7 @@ class OfficeWorld:
 
     def _load_map(self):
         # Creating the map
-        self.objects = dict()
+        self.objects = {}
         self.objects[(1, 1)] = "a"
         self.objects[(10, 1)] = "b"
         self.objects[(10, 7)] = "c"
@@ -132,12 +118,12 @@ class OfficeWorld:
         self.objects[(8, 2)] = "f"  # COFFEE
         self.objects[(3, 6)] = "f"  # COFFEE
         self.objects[(4, 4)] = "g"  # OFFICE
-        # self.objects[(4, 1)] = "n"  # PLANT
-        # self.objects[(7, 1)] = "n"  # PLANT
-        # self.objects[(4, 7)] = "n"  # PLANT
-        # self.objects[(7, 7)] = "n"  # PLANT
-        # self.objects[(1, 4)] = "n"  # PLANT
-        # self.objects[(10, 4)] = "n"  # PLANT
+        self.objects[(4, 1)] = "n"  # PLANT
+        self.objects[(7, 1)] = "n"  # PLANT
+        self.objects[(4, 7)] = "n"  # PLANT
+        self.objects[(7, 7)] = "n"  # PLANT
+        self.objects[(1, 4)] = "n"  # PLANT
+        self.objects[(10, 4)] = "n"  # PLANT
         # Adding walls
         self.forbidden_transitions = set()
         # general grid
@@ -215,7 +201,6 @@ def play():
                 print("Rewards:", rewards)
                 print("Next States:", next_states)
                 print("Reward:", r)
-                print(events)
                 print("---------------------")
 
                 if game.env_game_over or rm.is_terminal_state(u2):  # Game Over
