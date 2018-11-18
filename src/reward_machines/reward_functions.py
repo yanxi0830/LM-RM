@@ -33,3 +33,6 @@ class ConstantRewardFunction(RewardFunction):
 
     def get_reward(self, s1, a, s2):
         return self.c
+
+    def __repr__(self):
+        return "ConstantRewardFunction({})".format(self.c)

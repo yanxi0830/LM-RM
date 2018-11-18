@@ -9,14 +9,16 @@ from reward_machines.reward_machine_utils import evaluate_dnf, are_these_machine
 
 
 class RewardMachine:
-    def __init__(self, file):
+    def __init__(self, file=None):
         # <U,u0,delta_u,delta_r>
         self.U = []  # list of machine states
+        self.state2lm = dict()  # state id to landmark fact
         self.u0 = None  # initial state
         self.delta_u = {}  # state-transition function
         self.delta_r = {}  # reward-transition function
         self.T = set()  # set of terminal states (they are automatically detected)
-        self._load_reward_machine(file)
+        if file is not None:
+            self._load_reward_machine(file)
 
     # Public methods -----------------------------------
 
@@ -52,8 +54,8 @@ class RewardMachine:
 
     def is_this_machine_equivalent(self, u1, rm2, u2):
         """
-        return True iff 
-            this reward machine initialized at u1 is equivalent 
+        return True iff
+            this reward machine initialized at u1 is equivalent
             to the reward machine rm2 initialized at u2
         """
         return are_these_machines_equivalent(self, u1, rm2, u2)
@@ -61,6 +63,39 @@ class RewardMachine:
     def get_useful_transitions(self, u1):
         # This is an auxiliary method used by the HRL baseline to prune "useless" options
         return [self.delta_u[u1][u2].split("&") for u2 in self.delta_u[u1] if u1 != u2]
+
+    def get_txt_representation(self):
+        """
+        Prints the text file representation of this RM
+        """
+        print("{}\t\t\t # initial state".format(self.u0))
+        for u1 in self.U:
+            for u2 in self.delta_u[u1]:
+                print("({},{},'{}',{})".format(u1, u2, self.delta_u[u1][u2], self.delta_r[u1][u2]))
+
+    def add_state_with_landmarks(self, u_id, u_landmarknode):
+        if u_id not in self.U:
+            self.U.append(u_id)
+        if u_id not in self.state2lm:
+            self.state2lm[u_id] = u_landmarknode
+
+    def add_transition(self, u1, u2, dnf_formula, reward_function):
+        # Adding machine state
+        self._add_state([u1, u2])
+        # Adding state-transition to delta_u
+        if u1 not in self.delta_u:
+            self.delta_u[u1] = {}
+        self.delta_u[u1][u2] = dnf_formula
+        # Adding reward-transition to delta_r
+        if u1 not in self.delta_r:
+            self.delta_r[u1] = {}
+        self.delta_r[u1][u2] = reward_function
+
+    def set_initial_state(self, u0):
+        self.u0 = u0
+
+    def set_terminal_state(self, u_terminal):
+        self.add_transition(u_terminal, u_terminal, 'True', ConstantRewardFunction(0))
 
     # Private methods -----------------------------------
 
@@ -92,12 +127,12 @@ class RewardMachine:
         self.u_broken = len(self.U)
         self._add_transition(self.u_broken, self.u_broken, 'True', ConstantRewardFunction(0))
         self.T.add(self.u_broken)
-        # Sorting self.U... just because... 
+        # Sorting self.U... just because...
         self.U = sorted(self.U)
 
     def _is_terminal(self, u1):
         # A node is labelled as terminal if any policy is optimal for that node
-        # Here, we consider 2 simple cases: 
+        # Here, we consider 2 simple cases:
         #     - No transition is defined for u1
         #     - There is only one 'True' self-loop and the reward from "u1" to "u1" is constant
         if len(self.delta_u[u1]) == 0:
@@ -124,3 +159,8 @@ class RewardMachine:
         if u1 not in self.delta_r:
             self.delta_r[u1] = {}
         self.delta_r[u1][u2] = reward_function
+
+
+if __name__ == "__main__":
+    rm = RewardMachine("../../experiments/office/reward_machines/t2.txt")
+    rm.get_txt_representation()
