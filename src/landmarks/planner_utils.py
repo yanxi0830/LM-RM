@@ -22,7 +22,7 @@ def get_partial_ordered_rm(file_params, lm_node):
     lm_prob_file = construct_problem_file(file_params, lm_node)
     # execute cleanplan.sh to get sequential plan
     # TODO: PyCharm bug, running this in PyCharm gives UTF CodecError...run with command line or do some pre-processing
-    # os.system("{} {}".format(CLEANPLAN,lm_prob_file))
+    os.system("{} {}".format(CLEANPLAN,lm_prob_file))
 
     # use sequential plan, domain, lm_prob to get POP
     lm_plan_file = os.path.splitext(lm_prob_file)[0] + ".plan"
