@@ -1,7 +1,7 @@
 """
 Utility functions for integrating RewardMachine with LandmarkGraph
 """
-from landmark_graph import *
+from landmarks.landmark_graph import *
 from reward_machines.reward_machine import RewardMachine
 from reward_machines.reward_functions import ConstantRewardFunction
 import copy
@@ -17,8 +17,6 @@ def compute_rm_from_graph(lm_graph, merge_init_nodes=True):
     :param lm_graph: LandmarkGraph
     :return: set of RewardMachine
     """
-    # Let's first not worry about the action labels for edges :)
-
     # 1. Do we want to combine all initial state nodes
     if merge_init_nodes:
         lm_graph.merge_init_nodes()

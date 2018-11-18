@@ -1,7 +1,7 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 from translate import pddl_parser
-from translate import pddl
+from translate import *
 
 
 def custom_landmark_graph():
