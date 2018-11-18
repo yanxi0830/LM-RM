@@ -53,4 +53,6 @@ if __name__ == "__main__":
     popfile = "pop.txt"
     pop_good = encode_POP_v2(domain_file, prob_file, pop, None, popfile)
 
+    print(pop_good.goal)
+
     convert_pop_to_rm_network(pop_good)

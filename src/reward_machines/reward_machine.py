@@ -79,6 +79,10 @@ class RewardMachine:
         if u_id not in self.state2lm:
             self.state2lm[u_id] = u_landmarknode
 
+    def add_state(self, u_id):
+        if u_id not in self.U:
+            self.U.append(u_id)
+
     def add_transition(self, u1, u2, dnf_formula, reward_function):
         # Adding machine state
         self._add_state([u1, u2])

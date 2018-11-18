@@ -5,7 +5,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from enum import Enum
 from translate.pddl import Atom, NegatedAtom
-
+from landmarks.file_params import FileParams
 
 class LandmarkNode:
     def __init__(self, node_id=-1, children=None, parents=None, facts=None, disj=False, conj=False,
@@ -51,13 +51,24 @@ class LandmarkGraph:
     """
     This is the actual LandmarkGraph generated from Fast Downward
     """
-    def __init__(self, lm_file='landmark.txt'):
-        self.lm_file = lm_file          # spec file path
-        self.nodes = dict()              # map from LandmarkNode id to LandmarkNode
-        self.network = nx.DiGraph()     # easy visual graph
+    def __init__(self, file_params):
+        self.file_params = file_params
+        self.lm_file = file_params.landmark_file          # spec file path
+        self.nodes = dict()                               # map from LandmarkNode id to LandmarkNode
+        self.network = nx.DiGraph()                       # easy visual graph
 
         self._load_landmark_nodes()
         self._populate_network()
+        self._update_file_params()
+
+    def _update_file_params(self):
+        """
+        Each non-init LandmarkNode corresponds to a task spec (maybe broken)
+        :return:
+        """
+        for n_id, n in self.nodes.items():
+            if not n.in_init():
+                self.file_params.create_lm_path(n_id)
 
     def _populate_network(self):
         """
@@ -148,6 +159,7 @@ class LandmarkGraph:
     def merge_init_nodes(self):
         merge_id = -1
         to_remove = set()
+        new_node = None
         for n_id, n in self.nodes.items():
             if n.in_init():
                 if merge_id == -1:
@@ -158,7 +170,7 @@ class LandmarkGraph:
                 to_remove.add(n_id)
 
         # update self.nodes
-        self.nodes[merge_id] = new_node
+        if new_node: self.nodes[merge_id] = new_node
         for n_id in to_remove:
             self.nodes.pop(n_id)
 
@@ -186,9 +198,9 @@ class LandmarkStatus(Enum):
     lm_needed_again = 2
 
 
-# if __name__ == "__main__":
-    # lm_graph = LandmarkGraph('../../domains/office/landmark.txt')
-    # lm_graph.show_network()
-    # lm_graph.merge_init_nodes()
-    # lm_graph.show_network()
-    # lm_graph.show_network()
+if __name__ == "__main__":
+    lm_graph = LandmarkGraph(FileParams('../../domains/office/domain.pddl', '../../domains/office/t1.pddl'))
+    lm_graph.show_network()
+    lm_graph.merge_init_nodes()
+    lm_graph.show_network()
+    lm_graph.show_network()

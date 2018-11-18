@@ -2,6 +2,7 @@
 Utility functions for integrating RewardMachine with LandmarkGraph
 """
 from landmarks.landmark_graph import *
+from landmarks.planner_utils import *
 from reward_machines.reward_machine import RewardMachine
 from reward_machines.reward_functions import ConstantRewardFunction
 import copy
@@ -12,9 +13,10 @@ def compute_rm_from_graph(lm_graph, merge_init_nodes=True):
     Method 1
     - Each non-init landmark corresponds to RM (with terminal state)
     - Edge in each RM corresponds to actions needed to take (ideally only one action for nearest landmark)
-        - TODO: Integrate with FastDownward & POP to compute plans (sequential/partial-ordered)
-        - See planner_utils.py
+    - RM only reflects the necessary orderings, not partially-ordered
+
     :param lm_graph: LandmarkGraph
+    :param merge_init_nodes: bool
     :return: set of RewardMachine
     """
     # 1. Do we want to combine all initial state nodes
@@ -60,8 +62,35 @@ def compute_rm_from_graph(lm_graph, merge_init_nodes=True):
     return reward_machines
 
 
+def compute_rm_from_graph2(lm_graph, merge_init_nodes=True):
+    """
+    Method 2
+    - Iterate each non-init landmark, compute partial-ordered-plan to reach each landmark
+    - Convert POP to RewardMachine for each landmark
+            - See planner_utils.py
+    :param lm_graph: LandmarkGraph
+    :param merge_init_nodes: bool
+    :return: set of RewardMachine
+    """
+    if merge_init_nodes:
+        lm_graph.merge_init_nodes()
+
+    reward_machines = set()
+    for n_id, n, in lm_graph.nodes.items():
+        if not n.in_init():
+            if n.disjunctive:
+                raise NotImplementedError("Disjunctive Facts:", n.facts)
+
+            new_rm = get_partial_ordered_rm(lm_graph.file_params, n)
+
+            reward_machines.add(new_rm)
+
+    return reward_machines
+
+
 if __name__ == "__main__":
-    lm_graph = LandmarkGraph('../../domains/craft/landmark.txt')
-    compute_rm_from_graph(lm_graph)
-    print(lm_graph.nodes)
-    lm_graph.show_network()
+    lm_graph = LandmarkGraph(FileParams('../../domains/craft/domain.pddl', '../../domains/craft/t5.pddl'))
+    compute_rm_from_graph2(lm_graph)
+    # compute_rm_from_graph(lm_graph)
+    # print(lm_graph.nodes)
+    # lm_graph.show_network()

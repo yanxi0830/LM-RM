@@ -2,8 +2,8 @@ from __future__ import print_function
 
 import sys
 
-import pddl
-import pddl_to_prolog
+from translate import pddl
+from translate import pddl_to_prolog
 
 
 class OccurrencesTracker(object):

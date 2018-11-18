@@ -351,7 +351,7 @@ def encode_POP_v2(dom, prob, pop, flags, popfile):
 
                 # Forbid threats
                 # print "\n%s--%s-->%s: %s" % (str(a1), str(p), str(a2), str(deleters[p]))
-                for ad in filter(lambda x: x not in set([a1, a2]), deleters[p]):
+                for ad in filter(lambda x: x not in {a1, a2}, deleters[p]):
                     # print "...%s--%s-->%s: %s" % (str(a1), str(p), str(a2), str(ad))
                     m.addConstr((1 - s2v[(a1, p, a2)]) + (1 - a2v[ad]) + o2v[(ad, a1)] + o2v[(a2, ad)] >= 1)
 

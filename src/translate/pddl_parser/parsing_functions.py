@@ -4,8 +4,8 @@ from __future__ import print_function
 
 import sys
 
-import graph
-import pddl
+from translate import graph
+from translate import pddl
 
 
 def parse_typed_list(alist, only_variables=False,
@@ -115,7 +115,6 @@ def parse_literal(alist, type_dict, predicate_dict, negated=False):
 
     pred_id, arity = _get_predicate_id_and_arity(
         alist[0], type_dict, predicate_dict)
-    print(pred_id, arity)
 
     if arity != len(alist) - 1:
         raise SystemExit("predicate used with wrong arity: (%s)"
@@ -516,3 +515,35 @@ def check_for_duplicates(elements, errmsg, finalmsg):
             seen.add(element)
     if errors:
         raise SystemExit("\n".join(errors) + "\n" + finalmsg)
+
+
+def list_to_acc(task_pddl):
+    # problem definition
+    acc = list()
+    prob_name = task_pddl[1][1]
+    dom_name = task_pddl[2][1]
+    acc.append('(define (problem {})'.format(prob_name))
+    acc.append('\t(:domain {})'.format(dom_name))
+
+    # objects
+    objects = task_pddl[3]
+    acc.append('\t(:objects')
+    acc.append('\t\t' + ' '.join(objects[1:]))
+    acc.append('\t)')
+
+    # init state
+    init = task_pddl[4]
+    acc.append('\t(:init')
+    for init_fact in init[1:]:
+        acc.append('\t\t({})'.format(' '.join(init_fact)))
+    acc.append('\t)')
+
+    goal = task_pddl[5][1]
+    acc.append('\t(:goal (and')
+    for goal_fact in goal[1:]:
+        acc.append('\t\t({})'.format(' '.join(goal_fact)))
+    acc.append('\t\t)')
+    acc.append('\t)')
+    acc.append(')')
+
+    return acc

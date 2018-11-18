@@ -328,6 +328,12 @@ class Literal(Condition):
     def free_variables(self):
         return set(arg for arg in self.args if arg[0] == "?")
 
+    def as_list(self):
+        res = [self.predicate]
+        if len(self.args) != 0 and self.args[0] != "":
+            res += [arg for arg in self.args]
+        return res
+
 
 class Atom(Literal):
     negated = False

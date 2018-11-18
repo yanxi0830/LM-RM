@@ -6,8 +6,8 @@ from __future__ import print_function
 import sys
 import itertools
 
-import pddl
-import timers
+from translate import pddl
+from translate import timers
 from functools import reduce
 
 

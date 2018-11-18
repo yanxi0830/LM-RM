@@ -47,6 +47,6 @@ if __name__ == "__main__":
     # custom_landmark_graph()
     task = pddl_parser.open(domain_filename='../domains/office/domain.pddl',
                             task_filename='../domains/office/t3.pddl')
-    print(task.dump())
+    # print(task.dump())
 
     # condition = pddl.NegatedAtom()

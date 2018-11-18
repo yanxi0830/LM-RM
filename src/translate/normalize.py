@@ -2,7 +2,7 @@
 
 import copy
 
-import pddl
+from translate import pddl
 
 
 class ConditionProxy(object):

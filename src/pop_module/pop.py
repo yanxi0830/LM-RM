@@ -130,7 +130,7 @@ class POP(object):
         mapping = {}
 
         for i, node in enumerate(nodes.items()):
-            print(node)
+            # print(node)
             if compact:
                 if node.operator == 'init':
                     dot_string += "    %d [label=\"I\"];\n" % i
@@ -146,8 +146,7 @@ class POP(object):
             mapping[node[0]] = i
 
         for edge in edges:
-            print
-            edge
+            # print(edge)
             if compact:
                 dot_string += "    %d -> %d;\n" % (mapping[edge[0]], mapping[edge[1]])
             else:
