@@ -307,6 +307,9 @@ class Literal(Condition):
     def __repr__(self):
         return '<%s>' % self
 
+    def as_filename(self):
+        return "{}({})".format(self.predicate, ",".join(map(str, self.args)))
+
     def _dump(self):
         return str(self)
 

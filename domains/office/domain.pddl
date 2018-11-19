@@ -74,4 +74,10 @@
     :precondition (and (visited-coffee))
     :effect (and (delivered-coffee))
     )
+
+  (:action goto-office-mail-coffee
+    :parameters ()
+    :precondition (and (visited-coffee) (visited-mail))
+    :effect (and (delivered-coffee) (delivered-mail))
+    )
 )

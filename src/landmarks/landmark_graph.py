@@ -7,6 +7,7 @@ from enum import Enum
 from translate.pddl import Atom, NegatedAtom
 from landmarks.file_params import FileParams
 
+
 class LandmarkNode:
     def __init__(self, node_id=-1, children=None, parents=None, facts=None, disj=False, conj=False,
                  in_goal=False):
@@ -46,6 +47,11 @@ class LandmarkNode:
     def __repr__(self):
         return "LandmarkNode({}, {})".format(self.id, self.facts)
 
+    def facts_as_filename(self):
+        res = []
+        for f in self.facts:
+            res.append(f.as_filename())
+        return "-".join(res)
 
 class LandmarkGraph:
     """

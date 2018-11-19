@@ -14,6 +14,7 @@ from reward_machines.reward_functions import ConstantRewardFunction
 import os
 from subprocess import call
 import matplotlib.pyplot as plt
+from landmarks.action_mappings import ACTION2PROP
 
 CLEANPLAN = "/home/xiyan/git/LM-RM/scripts/cleanplan.sh"
 
@@ -32,8 +33,12 @@ def get_partial_ordered_rm(file_params, lm_node):
     # nx.draw_networkx_edge_labels(rm_net, pos=nx.shell_layout(rm_net))
     # plt.show()
     rm = rm_net_to_reward_machine(rm_net)
-    rm.get_txt_representation()
+    spec = rm.get_txt_representation()
+    lm_rm_file = os.path.dirname(file_params.domain_file) + "/lm_reward_machines/" + str(lm_node.facts_as_filename()) + ".txt"
 
+    write_file(lm_rm_file, spec)
+    # print(lm_rm_file)
+    # print(spec)
     return rm
 
 
@@ -112,19 +117,29 @@ def rm_net_to_reward_machine(rm_net):
         if len(list(rm_net.predecessors(node))) == 0:
             rm.set_initial_state(node2id[node])
 
-        # no children, terminal state
-        if len(list(rm_net.successors(node))) == 0:
-            rm.set_terminal_state(node2id[node])
-
+        selfloop = []
         for child in rm_net.successors(node):
             action = rm_net.get_edge_data(node, child)['attr']
+            event_prop = ACTION2PROP[str(action)]
+            if event_prop in selfloop:
+                selfloop.pop(selfloop.index(event_prop))
+            else:
+                selfloop.append('!' + str(event_prop))
             reward = 0
             if len(list(rm_net.successors(child))) == 0:
                 # child is terminal, get reward 1
                 reward = 1
-            rm.add_transition(node2id[node], node2id[child], action, ConstantRewardFunction(reward))
+            rm.add_transition(node2id[node], node2id[child], event_prop, ConstantRewardFunction(reward))
+
+        # add self loop
+        if len(list(rm_net.successors(node))) == 0:
+            # no children, terminal state
+            rm.set_terminal_state(node2id[node])
+        else:
+            rm.add_transition(node2id[node], node2id[node], '&'.join(selfloop), ConstantRewardFunction(0))
 
     return rm
+
 # if __name__ == "__main__":
 #     domain_file = "../../domains/craft/domain.pddl"
 #     prob_file = "../../domains/craft/t5.pddl"

@@ -68,10 +68,12 @@ class RewardMachine:
         """
         Prints the text file representation of this RM
         """
-        print("{}\t\t\t # initial state".format(self.u0))
+        res = ""
+        res += "{}\t\t\t # initial state\n".format(self.u0)
         for u1 in self.U:
             for u2 in self.delta_u[u1]:
-                print("({},{},'{}',{})".format(u1, u2, self.delta_u[u1][u2], self.delta_r[u1][u2]))
+                res += "({},{},'{}',{})\n".format(u1, u2, self.delta_u[u1][u2], self.delta_r[u1][u2])
+        return res
 
     def add_state_with_landmarks(self, u_id, u_landmarknode):
         if u_id not in self.U:
