@@ -140,12 +140,17 @@ def rm_net_to_reward_machine(rm_net):
 
     return rm
 
-# if __name__ == "__main__":
-#     domain_file = "../../domains/craft/domain.pddl"
-#     prob_file = "../../domains/craft/t5.pddl"
-#     plan_file = "../../domains/craft/t5.plan"
-#
-#     rm_net = pop_to_rm_network(compute_pop(domain_file, prob_file, plan_file))
-#     nx.draw_networkx(rm_net, pos=nx.shell_layout(rm_net), with_labels=False)
-#     nx.draw_networkx_edge_labels(rm_net, pos=nx.shell_layout(rm_net))
-#     plt.show()
+
+if __name__ == "__main__":
+    domain_file = "../../domains/office/domain.pddl"
+    prob_file = "../../domains/office/t3.pddl"
+    plan_file = "../../domains/office/t3.plan"
+
+    rm_net1 = pop_to_rm_network(compute_pop(domain_file, prob_file, plan_file))
+    # nx.draw_networkx(rm_net, pos=nx.shell_layout(rm_net), with_labels=False)
+    # nx.draw_networkx_edge_labels(rm_net, pos=nx.shell_layout(rm_net))
+    # plt.show()
+
+    rm1 = rm_net_to_reward_machine(rm_net1)
+    spec = rm1.get_txt_representation()
+    print(spec)

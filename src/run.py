@@ -1,5 +1,5 @@
 import random, time, argparse, os.path
-from qrm.qrm import run_qrm_experiments, run_qrm_and_save_policy
+from qrm.qrm import run_qrm_experiments, run_qrm_and_save_policy, parallel_composition_test
 from tester.tester import Tester
 from tester.saver import Saver
 from tester.tester_params import TestingParameters
@@ -235,7 +235,7 @@ def run_experiment(world, alg_name, experiment, num_times, show_print):
 if __name__ == "__main__":
     experiment = "../experiments/tests/office.txt"
     testing_params, learning_params, tester, curriculum = get_params_office_world(experiment)
-    run_qrm_and_save_policy("qrm", tester, curriculum, 1, False)
+    parallel_composition_test("qrm", tester, curriculum, 1, False)
 
     # EXAMPLE: python3 run.py --algorithm="qrm" --world="craft" --map=0 --num_times=1
 

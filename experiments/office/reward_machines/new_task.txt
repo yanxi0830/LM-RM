@@ -1,0 +1,11 @@
+0			 # initial state, partial ordered RM for new task
+(0,1,'e',ConstantRewardFunction(0))
+(0,4,'f',ConstantRewardFunction(0))
+(0,0,'!e&!f',ConstantRewardFunction(0))
+(1,2,'f',ConstantRewardFunction(0))
+(1,1,'!f',ConstantRewardFunction(0))
+(2,3,'g',ConstantRewardFunction(1))
+(2,2,'!g',ConstantRewardFunction(0))
+(3,3,'True',ConstantRewardFunction(0))
+(4,2,'e',ConstantRewardFunction(0))
+(4,4,'!e',ConstantRewardFunction(0))

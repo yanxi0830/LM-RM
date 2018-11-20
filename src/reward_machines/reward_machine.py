@@ -6,7 +6,7 @@ if __name__ == '__main__':
 
 from reward_machines.reward_functions import *
 from reward_machines.reward_machine_utils import evaluate_dnf, are_these_machines_equivalent
-
+import random
 
 class RewardMachine:
     def __init__(self, file=None):
@@ -102,6 +102,11 @@ class RewardMachine:
 
     def set_terminal_state(self, u_terminal):
         self.add_transition(u_terminal, u_terminal, 'True', ConstantRewardFunction(0))
+
+    def get_random_next_prop(self, u1):
+        # return *any* useful macro-action edge, quick hack
+        useful = [self.delta_u[u1][u2] for u2 in self.delta_u[u1] if u1 != u2]
+        return random.choice(useful)
 
     # Private methods -----------------------------------
 

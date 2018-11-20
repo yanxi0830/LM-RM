@@ -1,7 +1,6 @@
-0
-(0,0,'!f&!g',ConstantRewardFunction(0))
+0			 # initial state
 (0,1,'f',ConstantRewardFunction(0))
-(0,2,'f&g',ConstantRewardFunction(1))
-(1,1,'!g',ConstantRewardFunction(0))
+(0,0,'!f',ConstantRewardFunction(0))
 (1,2,'g',ConstantRewardFunction(1))
+(1,1,'!g',ConstantRewardFunction(0))
 (2,2,'True',ConstantRewardFunction(0))
