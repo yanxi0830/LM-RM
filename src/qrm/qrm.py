@@ -34,7 +34,7 @@ def run_qrm_task(sess, rm_file, policy_bank, tester, curriculum, replay_buffer, 
     # if show_print: print("Executing", num_steps)
     for t in range(num_steps):
 
-        # Choosing an action to perform
+        # Choosing an action to perform (more exploration)
         if random.random() < 0.1:
             a = random.choice(actions)
         else:
@@ -324,6 +324,7 @@ def parallel_composition_test(alg_name, tester, curriculum, num_times, show_prin
         old_high_level_prop = None
 
         for t in range(tester.testing_params.num_steps):
+            # task.render()
             # Get the current high-level action we want to execute
             if curr_policy is None:
                 high_level_prop = new_task_rm.get_random_next_prop(new_task_u1)
@@ -337,8 +338,16 @@ def parallel_composition_test(alg_name, tester, curriculum, num_times, show_prin
                 for i, rm in enumerate(reward_machines):
                     next_state = rm.get_next_state(u1s[i], high_level_prop)
                     if next_state != rm.u_broken and next_state != u1s[i]:
-                        print("Got a RM to follow because {} have transition {}".format(rm, high_level_prop))
+                        print("Got a RM to follow because {} have transition {}".format(i, high_level_prop))
                         curr_policy = rm
+                        # break
+
+            # WE'RE STUCK
+            if curr_policy is None:
+                print("STUCK! Want to take " + high_level_prop)
+                # Option 1: Update other RM states after taking each action
+                #           - i.e. break apart the policy [coffee->office] into [coffee] and [office]
+                # Option 2: Re-plan
 
             # Follow this current policy until reaches the desired next state
             curr_policy_id = reward_machines.index(curr_policy)

@@ -89,7 +89,7 @@ def compute_rm_from_graph2(lm_graph, merge_init_nodes=True):
 
 
 if __name__ == "__main__":
-    lm_graph = LandmarkGraph(FileParams('../domains/office/domain.pddl', '../domains/office/t2.pddl'))
+    lm_graph = LandmarkGraph(FileParams('../domains/office/domain.pddl', '../domains/office/t4.pddl'))
     compute_rm_from_graph2(lm_graph)
     # compute_rm_from_graph(lm_graph)
     # print(lm_graph.nodes)

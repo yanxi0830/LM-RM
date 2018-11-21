@@ -56,3 +56,6 @@ class Game:
 
     def get_state_and_features(self):
         return self.get_state(), self.get_features()
+
+    def render(self):
+        self.game.show()

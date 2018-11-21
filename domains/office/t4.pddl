@@ -8,9 +8,7 @@
 	)
 	(:goal (and
     (visited-A)
-    (visited-B)
-    (visited-C)
-    (visited-D)
+    (delivered-mail)
 		)
 	)
 )

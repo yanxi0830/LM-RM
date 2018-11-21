@@ -143,8 +143,8 @@ def rm_net_to_reward_machine(rm_net):
 
 if __name__ == "__main__":
     domain_file = "../../domains/office/domain.pddl"
-    prob_file = "../../domains/office/t3.pddl"
-    plan_file = "../../domains/office/t3.plan"
+    prob_file = "../../domains/office/t4.pddl"
+    plan_file = "../../domains/office/t4.plan"
 
     rm_net1 = pop_to_rm_network(compute_pop(domain_file, prob_file, plan_file))
     # nx.draw_networkx(rm_net, pos=nx.shell_layout(rm_net), with_labels=False)
