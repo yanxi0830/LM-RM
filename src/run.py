@@ -9,68 +9,6 @@ from qrm.learning_params import LearningParameters
 from worlds.water_world import Ball, BallAgent
 
 
-def get_params_box_world(experiment):
-    step_unit = 500
-
-    # configuration of testing params
-    testing_params = TestingParameters()
-    testing_params.test = True
-    testing_params.test_freq = 1 * step_unit
-    testing_params.num_steps = 1000
-
-    # # configuration of learning params
-    # learning_params = LearningParameters()
-    # learning_params.gamma = 0.9
-    # learning_params.print_freq = step_unit
-    # learning_params.train_freq = 1
-    # learning_params.tabular_case = False
-    # learning_params.max_timesteps_per_task = testing_params.num_steps
-    #
-    # # This are the parameters that tabular q-learning would use to work as 'tabular q-learning'
-    # learning_params.lr = 1
-    # learning_params.batch_size = 1
-    # learning_params.learning_starts = 1
-    # learning_params.buffer_size = 1
-
-    # configuration of learning params
-    learning_params = LearningParameters()
-    learning_params.lr = 1e-5  # 5e-5 seems to be better than 1e-4
-    learning_params.gamma = 0.9
-    learning_params.max_timesteps_per_task = testing_params.num_steps
-    learning_params.buffer_size = 50000
-    learning_params.print_freq = step_unit
-    learning_params.train_freq = 1
-    learning_params.batch_size = 32
-    learning_params.target_network_update_freq = 100  # obs: 500 makes learning more stable, but slower
-    learning_params.learning_starts = 1000
-
-    # Tabular case
-    learning_params.tabular_case = False  # it is not possible to use tabular RL in the water world
-    learning_params.use_random_maps = False
-    learning_params.use_double_dqn = True
-    learning_params.prioritized_replay = True
-    learning_params.num_hidden_layers = 6
-    learning_params.num_neurons = 64
-
-    # Setting the experiment
-    tester = Tester(learning_params, testing_params, experiment)
-
-    # Setting the curriculum learner
-    curriculum = CurriculumLearner(tester.get_task_rms())
-    curriculum.num_steps = testing_params.num_steps
-    curriculum.total_steps = 1000 * step_unit
-    curriculum.min_steps = 1
-
-    print("Box World ----------")
-    print("TRAIN gamma:", learning_params.gamma)
-    print("Total steps:", curriculum.total_steps)
-    print("tabular_case:", learning_params.tabular_case)
-    print("num_steps:", testing_params.num_steps)
-    print("total_steps:", curriculum.total_steps)
-
-    return testing_params, learning_params, tester, curriculum
-
-
 def get_params_craft_world(experiment):
     step_unit = 1000
 
@@ -233,7 +171,7 @@ def run_experiment(world, alg_name, experiment, num_times, show_print):
 
 
 if __name__ == "__main__":
-    experiment = "../experiments/tests/office.txt"
+    experiment = "../experiments/craft/tests/craft_0.txt"
     testing_params, learning_params, tester, curriculum = get_params_office_world(experiment)
     parallel_composition_test("qrm", tester, curriculum, 1, False)
 

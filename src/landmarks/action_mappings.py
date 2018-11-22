@@ -8,4 +8,19 @@ ACTION2PROP = {
     '(goto-office-mail)': 'g',
     '(goto-office-coffee)': 'g',
     '(goto-office-mail-coffee)': 'g',
+
+    '(get-wood)': 'a',
+    '(get-wood-1)': 'a',
+    '(get-grass)': 'd',
+    '(get-iron)': 'f',
+    '(make-plank)': 'b',
+    '(make-rope)': 'b',
+    '(make-axe)': 'b',
+    '(make-bed)': 'c',
+    '(make-stick)': 'c',
+    '(make-shears)': 'c',
+    '(make-cloth)': 'e',
+    '(make-bridge)': 'e',
+    '(get-gold)': 'g',
+    '(get-gem)': 'h'
 }

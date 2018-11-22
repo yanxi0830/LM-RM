@@ -1,0 +1,4 @@
+0			 # have-wood
+(0,1,'a',ConstantRewardFunction(1))
+(0,0,'!a',ConstantRewardFunction(0))
+(1,1,'True',ConstantRewardFunction(0))

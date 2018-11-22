@@ -6,7 +6,7 @@
 	)
 	(:goal (and
     (have-plank)
-    (have-stick)
+    (have-bridge)
 		)
 	)
 )

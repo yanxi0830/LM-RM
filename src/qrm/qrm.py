@@ -222,10 +222,9 @@ def train_and_save_qrm(alg_name, tester, curriculum, num_times, show_print):
         # Save session
         print("Saving model...")
         saver = tf.train.Saver()
-        saver.save(sess, '../model/my-model')
+        saver.save(sess, '../craft-model/my-model')
 
         reward_machines = tester.get_reward_machines()
-        policy_b = reward_machines[5]
 
         task = Game(tester.get_task_params('PLACEHOLDER'))
         # task.game.agent = (7, 3)
@@ -403,13 +402,13 @@ def parallel_composition_test(alg_name, tester, curriculum, num_times, show_prin
         policy_bank = PolicyBankDQN(sess, num_actions, num_features, learning_params, tester.get_reward_machines())
 
         saver = tf.train.Saver()
-        saver.restore(sess, tf.train.latest_checkpoint('../model'))
+        saver.restore(sess, tf.train.latest_checkpoint('../craft-model'))
 
         print("Loaded policies (RMs)".format(len(tester.get_reward_machines())))
         reward_machines = tester.get_reward_machines()
 
         # partial ordered RM for task of getting mail and coffee
-        new_task_rm = RewardMachine('../experiments/office/reward_machines/new_task.txt')
+        new_task_rm = RewardMachine('../experiments/craft/reward_machines/new_task.txt')
         new_task_u1 = new_task_rm.get_initial_state()
 
         task = Game(tester.get_task_params('PLACEHOLDER'))
@@ -443,6 +442,7 @@ def parallel_composition_test(alg_name, tester, curriculum, num_times, show_prin
             # WE'RE STUCK
             if curr_policy is None:
                 print("STUCK! Want to take " + high_level_prop)
+                print(u1s)
                 # Option 1: Update other RM states after taking each action
                 #           - i.e. break apart the policy [coffee->office] into [coffee] and [office]
                 # Option 2: Re-plan
@@ -467,6 +467,9 @@ def parallel_composition_test(alg_name, tester, curriculum, num_times, show_prin
             desired_next_state = curr_policy.get_next_state(u1s[curr_policy_id], high_level_prop)
             if curr_policy_u2 == desired_next_state:
                 print("EXECUTED ACTION {}, SWITCHING POLICIES".format(high_level_prop))
+                # If a small policy reaches terminal, reset it to the initial state to be re-used
+                if reward_machines[curr_policy_id]._is_terminal(curr_policy_u2):
+                    curr_policy_u2 = reward_machines[curr_policy_id].u0
                 curr_policy = None
             elif curr_policy_u2 == u1s[curr_policy_id]:
                 print("Follow current policy, don't switch")
