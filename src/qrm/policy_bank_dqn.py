@@ -173,3 +173,4 @@ class PolicyDQN(Policy):
 
     def get_q_target_value(self):
         return self.q_target_value
+

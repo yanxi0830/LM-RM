@@ -1,5 +1,5 @@
 import random, time, argparse, os.path
-from qrm.qrm import run_qrm_experiments, run_qrm_and_save_policy, parallel_composition_test
+from qrm.qrm import run_qrm_experiments, run_qrm_and_save_policy, parallel_composition_test, train_and_save_qrm, load_and_test
 from tester.tester import Tester
 from tester.saver import Saver
 from tester.tester_params import TestingParameters
@@ -114,7 +114,7 @@ def get_params_craft_world(experiment):
 
 
 def get_params_office_world(experiment):
-    step_unit = 500
+    step_unit = 1000
 
     # configuration of testing params
     testing_params = TestingParameters()
@@ -139,8 +139,8 @@ def get_params_office_world(experiment):
 
     # Setting the curriculum learner
     curriculum = CurriculumLearner(tester.get_task_rms())
-    curriculum.num_steps = testing_params.num_steps  # 100
-    curriculum.total_steps = 100 * step_unit
+    curriculum.num_steps = 1000  # 1000
+    curriculum.total_steps = 1000 * step_unit
     curriculum.min_steps = 1
 
     print("Office World ----------")
@@ -236,6 +236,11 @@ if __name__ == "__main__":
     experiment = "../experiments/tests/office.txt"
     testing_params, learning_params, tester, curriculum = get_params_office_world(experiment)
     parallel_composition_test("qrm", tester, curriculum, 1, False)
+
+    # test_single_policy("qrm", tester, curriculum, 1, False)
+
+    # train_and_save_qrm("qrm", tester, curriculum, 1, False)
+    # load_and_test(tester, curriculum, 1, False)
 
     # EXAMPLE: python3 run.py --algorithm="qrm" --world="craft" --map=0 --num_times=1
 

@@ -35,7 +35,7 @@ def run_qrm_task(sess, rm_file, policy_bank, tester, curriculum, replay_buffer, 
     for t in range(num_steps):
 
         # Choosing an action to perform (more exploration)
-        if random.random() < 0.1:
+        if random.random() < 0.3:
             a = random.choice(actions)
         else:
             a = policy_bank.get_best_action(task_rm_id, u1, s1_features.reshape((1, num_features)))
@@ -190,6 +190,105 @@ def run_qrm_experiments(alg_name, tester, curriculum, num_times, show_print):
     print("Time:", "%0.2f" % ((time.time() - time_init) / 60), "mins")
 
 
+def train_and_save_qrm(alg_name, tester, curriculum, num_times, show_print):
+    learning_params = tester.learning_params
+
+    time_init = time.time()
+    for n in range(num_times):
+        random.seed(n)
+        sess = tf.Session()
+
+        curriculum.restart()
+
+        # Creating the experience replay buffer
+        replay_buffer, beta_schedule = create_experience_replay_buffer(learning_params.buffer_size,
+                                                                       learning_params.prioritized_replay,
+                                                                       learning_params.prioritized_replay_alpha,
+                                                                       learning_params.prioritized_replay_beta0,
+                                                                       curriculum.total_steps if learning_params.prioritized_replay_beta_iters is None else learning_params.prioritized_replay_beta_iters)
+
+        # Creating policy bank
+        task_aux = Game(tester.get_task_params(curriculum.get_current_task()))
+        num_features = len(task_aux.get_features())
+        num_actions = len(task_aux.get_actions())
+
+        policy_bank = PolicyBankDQN(sess, num_actions, num_features, learning_params, tester.get_reward_machines())
+
+        # Task loop
+        while not curriculum.stop_learning():
+            rm_file = curriculum.get_next_task()
+            run_qrm_task(sess, rm_file, policy_bank, tester, curriculum, replay_buffer, beta_schedule, show_print)
+
+        # Save session
+        print("Saving model...")
+        saver = tf.train.Saver()
+        saver.save(sess, '../model/my-model')
+
+        reward_machines = tester.get_reward_machines()
+        policy_b = reward_machines[5]
+
+        task = Game(tester.get_task_params('PLACEHOLDER'))
+        # task.game.agent = (7, 3)
+        s1, s1_features = task.get_state_and_features()
+
+        for t in range(tester.testing_params.num_steps):
+            task.render()
+            a = policy_bank.get_best_action(0, 0, s1_features.reshape((1, num_features)), add_noise=False)
+            print("Action:", a)
+            # Executing the action
+            task.execute_action(a)
+            s2, s2_features = task.get_state_and_features()
+
+            s1, s1_features = s2, s2_features
+
+
+def load_and_test(tester, curriculum, num_times, show_print):
+    learning_params = tester.learning_params
+
+    tf.reset_default_graph()
+    curriculum.restart()
+
+    with tf.Session() as sess:
+        # saver = tf.train.import_meta_graph('../model/my-model.meta')
+
+        # Creating the experience replay buffer
+        replay_buffer, beta_schedule = create_experience_replay_buffer(learning_params.buffer_size,
+                                                                       learning_params.prioritized_replay,
+                                                                       learning_params.prioritized_replay_alpha,
+                                                                       learning_params.prioritized_replay_beta0,
+                                                                       curriculum.total_steps if learning_params.prioritized_replay_beta_iters is None else learning_params.prioritized_replay_beta_iters)
+
+        # Creating policy bank
+        task_aux = Game(tester.get_task_params(curriculum.get_current_task()))
+        num_features = len(task_aux.get_features())
+        num_actions = len(task_aux.get_actions())
+
+        policy_bank = PolicyBankDQN(sess, num_actions, num_features, learning_params, tester.get_reward_machines())
+
+        saver = tf.train.Saver()
+        saver.restore(sess, tf.train.latest_checkpoint('../model'))
+
+        task_aux = Game(tester.get_task_params(curriculum.get_current_task()))
+
+        reward_machines = tester.get_reward_machines()
+        policy_b = reward_machines[5]
+
+        task = Game(tester.get_task_params('PLACEHOLDER'))
+        task.game.agent = (1, 7)
+        s1, s1_features = task.get_state_and_features()
+
+        for t in range(tester.testing_params.num_steps):
+            task.render()
+            a = policy_bank.get_best_action(1, 0, s1_features.reshape((1, num_features)), add_noise=False)
+
+            print("Action:", a)
+            # Executing the action
+            task.execute_action(a)
+            s2, s2_features = task.get_state_and_features()
+
+            s1, s1_features = s2, s2_features
+
+
 def run_qrm_and_save_policy(alg_name, tester, curriculum, num_times, show_print):
     learning_params = tester.learning_params
 
@@ -285,8 +384,8 @@ def run_qrm_and_save_policy(alg_name, tester, curriculum, num_times, show_print)
 def parallel_composition_test(alg_name, tester, curriculum, num_times, show_print):
     learning_params = tester.learning_params
 
-    for t in range(num_times):
-        random.seed(t)
+    for n in range(num_times):
+        random.seed(n)
         sess = tf.Session()
 
         curriculum.restart()
@@ -303,11 +402,10 @@ def parallel_composition_test(alg_name, tester, curriculum, num_times, show_prin
 
         policy_bank = PolicyBankDQN(sess, num_actions, num_features, learning_params, tester.get_reward_machines())
 
-        while not curriculum.stop_learning():
-            rm_file = curriculum.get_next_task()
-            run_qrm_task(sess, rm_file, policy_bank, tester, curriculum, replay_buffer, beta_schedule, show_print)
+        saver = tf.train.Saver()
+        saver.restore(sess, tf.train.latest_checkpoint('../model'))
 
-        print("Done! Computed {} policies (RMs)".format(len(tester.get_reward_machines())))
+        print("Loaded policies (RMs)".format(len(tester.get_reward_machines())))
         reward_machines = tester.get_reward_machines()
 
         # partial ordered RM for task of getting mail and coffee
@@ -392,6 +490,5 @@ def parallel_composition_test(alg_name, tester, curriculum, num_times, show_prin
                 s1, s1_features = s2, s2_features
                 new_task_u1 = new_task_u2
                 u1s[curr_policy_id] = curr_policy_u2
-
 
         print("ALL FINISHED")
