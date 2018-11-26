@@ -1,10 +1,12 @@
 import random, time, argparse, os.path
-from qrm.qrm import run_qrm_experiments, run_qrm_and_save_policy, parallel_composition_test, train_and_save_qrm, load_and_test
+from qrm.qrm import run_qrm_experiments
+from qrm.experiments import *
 from tester.tester import Tester
 from tester.saver import Saver
 from tester.tester_params import TestingParameters
 from common.curriculum import CurriculumLearner
 from qrm.learning_params import LearningParameters
+from qrm.experiments import *
 # The pickle library is asking me to have access to Ball and BallAgent from the main...
 from worlds.water_world import Ball, BallAgent
 
@@ -171,12 +173,14 @@ def run_experiment(world, alg_name, experiment, num_times, show_print):
 
 
 if __name__ == "__main__":
-    experiment = "../experiments/craft/tests/craft_0.txt"
+    experiment = "../experiments/office/tests/office.txt"
     testing_params, learning_params, tester, curriculum = get_params_office_world(experiment)
-    parallel_composition_test("qrm", tester, curriculum, 1, False)
+    # run_qrm_save_model("qrm", tester, curriculum, 1, False)
+    load_model_and_test_composition("qrm", tester, curriculum, 1, False)
 
+
+    # parallel_composition_test("qrm", tester, curriculum, 1, False)
     # test_single_policy("qrm", tester, curriculum, 1, False)
-
     # train_and_save_qrm("qrm", tester, curriculum, 1, False)
     # load_and_test(tester, curriculum, 1, False)
 

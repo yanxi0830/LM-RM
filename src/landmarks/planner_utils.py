@@ -92,6 +92,7 @@ def pop_to_rm_network(pop):
     """
     network = nx.DiGraph()
     plans = linearize(pop)
+    print(plans)
 
     for linear_plan in plans:
         for i, action in enumerate(linear_plan[:-1]):
@@ -142,15 +143,15 @@ def rm_net_to_reward_machine(rm_net):
 
 
 if __name__ == "__main__":
-    domain_file = "../../domains/craft/domain.pddl"
-    prob_file = "../../domains/craft/t11.pddl"
-    plan_file = "../../domains/craft/t11.plan"
+    domain_file = "../../domains/office/domain.pddl"
+    prob_file = "../../domains/office/t4.pddl"
+    plan_file = "../../domains/office/t4.plan"
 
     rm_net1 = pop_to_rm_network(compute_pop(domain_file, prob_file, plan_file))
-    # nx.draw_networkx(rm_net1, pos=nx.shell_layout(rm_net1), with_labels=False)
-    # nx.draw_networkx_edge_labels(rm_net1, pos=nx.shell_layout(rm_net1))
-    # plt.show()
-    #
+    nx.draw_networkx(rm_net1, pos=nx.shell_layout(rm_net1), with_labels=False)
+    nx.draw_networkx_edge_labels(rm_net1, pos=nx.shell_layout(rm_net1))
+    plt.show()
+
     rm1 = rm_net_to_reward_machine(rm_net1)
     spec = rm1.get_txt_representation()
     print(spec)

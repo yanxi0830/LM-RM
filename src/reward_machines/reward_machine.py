@@ -108,6 +108,14 @@ class RewardMachine:
         useful = [self.delta_u[u1][u2] for u2 in self.delta_u[u1] if u1 != u2]
         return random.choice(useful)
 
+    def get_state_with_transition(self, prop):
+        # return state_id that can transition with prop
+        for u1 in self.U:
+            for u2 in self.delta_u[u1]:
+                if evaluate_dnf(self.delta_u[u1][u2], prop) and u1 != u2:
+                    return u1
+        return None
+
     # Private methods -----------------------------------
 
     def _load_reward_machine(self, file):
