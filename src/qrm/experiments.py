@@ -7,6 +7,13 @@ from tester.saver import Saver
 from reward_machines.reward_machine import RewardMachine
 from qrm.qrm import *
 from qrm.policy_graph import PolicyGraph
+from worlds.game_objects import Actions
+import logging
+import copy
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
 
 def run_qrm_save_model(alg_name, tester, curriculum, num_times, show_print):
     learning_params = tester.learning_params
@@ -100,56 +107,100 @@ def load_model_and_test_composition(alg_name, tester, curriculum, num_times, sho
 
         def search_policy(prop_order):
             """
-            Given a linearized plan sequence, do a (DFS) search over the sequence of RM policies
+            Given a linearized plan sequence, do a search over the sequence of RM policies
             to execute that achieves most optimal cost
-            :param prop_order:
+            :param prop_order: sequence of high-level actions
             :return: cost, sequence of policies (RM-id, state_id)
             """
             policy_graph = build_policy_graph(prop_order)
-            print(policy_graph)
             # Follow the graph during execution to calculate the cost
             all_policies = policy_graph.flatten_all_paths([])
-            min_costs = [float('inf')] * len(all_policies)
-            for p in all_policies.copy():
+            min_costs = np.full(len(all_policies), np.inf)
+            for j, p in enumerate(copy.deepcopy(all_policies)):
                 task = Game(tester.get_task_params(curriculum.get_current_task()))
                 new_task_u1 = new_task_rm.get_initial_state()
                 s1, s1_features = task.get_state_and_features()
+                curr_policy = None
                 for t in range(tester.testing_params.num_steps):
-                    curr_policy = p.pop(0)
+                    if curr_policy is None:
+                        curr_policy = p.pop(0)
+                    curr_policy_rm = reward_machines[curr_policy[0]]
                     a = policy_bank.get_best_action(curr_policy[0], curr_policy[1],
                                                     s1_features.reshape((1, num_features)),
                                                     add_noise=False)
                     task.execute_action(a)
                     s2, s2_features = task.get_state_and_features()
-                    curr_policy_u2 = curr_policy.get_next_state(curr_policy[1], task.get_true_propositions())
+                    curr_policy_u2 = curr_policy_rm.get_next_state(curr_policy[1], task.get_true_propositions())
                     new_task_u2 = new_task_rm.get_next_state(new_task_u1, task.get_true_propositions())
 
-                    # desired_next_state = curr_policy.get_next_state(curr_policy[1], )
+                    desired_next_state = curr_policy_rm.get_next_state(curr_policy[1], curr_policy[2])
+                    if curr_policy_u2 == desired_next_state:
+                        logger.info("EXECUTED ACTION {}, SWITCHING POLICIES".format(curr_policy[2]))
+                        curr_policy = None
+                    elif curr_policy_u2 == curr_policy[1]:
+                        logger.info("STILL FOLLOWING CURRENT POLICY {}, DON'T SWITCH".format(curr_policy[2]))
+                    else:
+                        logger.info("OOPS, WRONG WAY, PRUNE THIS OPTION")
+                        break
 
+                    if task.is_env_game_over() or t + 1 >= np.min(min_costs):
+                        break
 
-            return 0, []
+                    if new_task_rm.is_terminal_state(new_task_u2):
+                        print("NEW COMPOSED TASK FINISHED WITH {}".format(all_policies[j]))
+                        print("STEPS:", t + 1)
+                        min_costs[j] = t+1
+                        break
+                    else:
+                        s1, s1_features = s2, s2_features
+                        new_task_u1 = new_task_u2
+
+            min_idx = np.argmin(min_costs)
+            return min_costs[min_idx], all_policies[min_idx]
 
         for i, curr_plan in enumerate(linearized_plans):
             # Get the least cost path for the current linearized plan
             cost, switching_seq = search_policy(curr_plan)
+            print(cost, switching_seq)
             if cost < least_cost:
                 least_cost = cost
                 best_policy = switching_seq
 
         # Execute the best policy
+        print("Executing Best Policy...{}".format(best_policy))
+        task = Game(tester.get_task_params(curriculum.get_current_task()))
+        new_task_u1 = new_task_rm.get_initial_state()
+        s1, s1_features = task.get_state_and_features()
+        r_total = 0
+        curr_policy = None
+        for t in range(int(least_cost)):
+            task.render()
+            if curr_policy is None:
+                curr_policy = best_policy.pop(0)
+            curr_policy_rm = reward_machines[curr_policy[0]]
 
+            a = policy_bank.get_best_action(curr_policy[0], curr_policy[1],
+                                            s1_features.reshape((1, num_features)),
+                                            add_noise=False)
+            print("Action:", Actions(a))
+            task.execute_action(a)
 
+            s2, s2_features = task.get_state_and_features()
+            new_task_u2 = new_task_rm.get_next_state(new_task_u1, task.get_true_propositions())
 
+            curr_policy_u2 = curr_policy_rm.get_next_state(curr_policy[1], task.get_true_propositions())
+            desired_next_state = curr_policy_rm.get_next_state(curr_policy[1], curr_policy[2])
+            if curr_policy_u2 == desired_next_state:
+                logger.info("EXECUTED ACTION {}, SWITCHING POLICIES".format(curr_policy[2]))
+                curr_policy = None
 
-        # simulator for running new task
-        # task = Game(tester.get_task_params(curriculum.get_current_task()))
-        # s1, s1_features = task.get_state_and_features()
+            r = new_task_rm.get_reward(new_task_u1, new_task_u2, s1, a, s2)
+            r_total += r * tester.learning_params.gamma ** t
 
-
-
-
-
-
+            s1, s1_features = s2, s2_features
+            new_task_u1 = new_task_u2
+        task.render()
+        print("Rewards:", r_total)
 
 ###################################################################################################################
 #
@@ -348,115 +399,115 @@ def load_model_and_test_composition(alg_name, tester, curriculum, num_times, sho
 #         print("ALL FINISHED")
 #
 #
-def parallel_composition_test(alg_name, tester, curriculum, num_times, show_print):
-    learning_params = tester.learning_params
-
-    for n in range(num_times):
-        random.seed(n)
-        sess = tf.Session()
-
-        curriculum.restart()
-
-        # Initialize a policy_bank graph to be loaded with saved model
-        task_aux = Game(tester.get_task_params(curriculum.get_current_task()))
-        num_features = len(task_aux.get_features())
-        num_actions = len(task_aux.get_actions())
-        policy_bank = PolicyBankDQN(sess, num_actions, num_features,
-                                    tester.learning_params, tester.get_reward_machines())
-
-        # Load the model
-        saver = tf.train.Saver()
-        saver.restore(sess, tf.train.latest_checkpoint('../model/' + str(task_aux.params.game_type)))
-
-        reward_machines = tester.get_reward_machines()
-        print("Loaded {} policies (RMs)".format(len(reward_machines)))
-
-        # partial-ordered RM of new task
-        new_task_rm = RewardMachine('../experiments/office/reward_machines/new_task.txt')
-        new_task_u1 = new_task_rm.get_initial_state()
-
-        # simulator for running new task
-        task = Game(tester.get_task_params(curriculum.get_current_task()))
-        s1, s1_features = task.get_state_and_features()
-
-        # the initial state of all learned policies
-        u1s = [rm.get_initial_state() for rm in reward_machines]
-        curr_policy = None  # current RM we are following
-        r_total = 0
-        old_high_level_prop = None
-
-        for t in range(tester.testing_params.num_steps):
-            task.render()
-            # Get the current high-level action we want to execute
-            if curr_policy is None:
-                high_level_prop = new_task_rm.get_random_next_prop(new_task_u1)
-                old_high_level_prop = high_level_prop
-            else:
-                high_level_prop = old_high_level_prop
-
-            # From pool of learned RMs, pick one that **possibly** executes the high-level action
-            # TODO: might not execute another path of be stuck infinite loop
-            if curr_policy is None:
-                for i, rm in enumerate(reward_machines):
-                    next_state = rm.get_next_state(u1s[i], high_level_prop)
-                    if next_state != rm.u_broken and next_state != u1s[i]:
-                        print("Got a RM to follow because {} have transition {}".format(i, high_level_prop))
-                        curr_policy = rm
-                        # break
-
-            # WE'RE STUCK
-            if curr_policy is None:
-                print("STUCK! Want to take " + high_level_prop)
-                print(u1s)
-                # Option 1: Update other RM states after taking each action
-                #           - i.e. break apart the policy [coffee->office] into [coffee] and [office]
-                # Option 2: Re-plan
-
-            # Follow this current policy until reaches the desired next state
-            curr_policy_id = reward_machines.index(curr_policy)
-            a = policy_bank.get_best_action(curr_policy_id, u1s[curr_policy_id],
-                                            s1_features.reshape((1, num_features)),
-                                            add_noise=False)
-
-            task.execute_action(a)
-            s2, s2_features = task.get_state_and_features()
-
-            # u2s = []    # all learned policies new states
-            # for i, rm in enumerate(reward_machines):
-            #     u2s.append(rm.get_next_state(u1s[i], task.get_true_propositions()))
-
-            curr_policy_u2 = curr_policy.get_next_state(u1s[curr_policy_id], task.get_true_propositions())
-            new_task_u2 = new_task_rm.get_next_state(new_task_u1, task.get_true_propositions())
-
-            # check if current policy successfully executed the selected action
-            desired_next_state = curr_policy.get_next_state(u1s[curr_policy_id], high_level_prop)
-            if curr_policy_u2 == desired_next_state:
-                print("EXECUTED ACTION {}, SWITCHING POLICIES".format(high_level_prop))
-                # If a small policy reaches terminal, reset it to the initial state to be re-used
-                if reward_machines[curr_policy_id]._is_terminal(curr_policy_u2):
-                    curr_policy_u2 = reward_machines[curr_policy_id].u0
-                curr_policy = None
-            elif curr_policy_u2 == u1s[curr_policy_id]:
-                print("Follow current policy, don't switch")
-            else:
-                print("Oops, wrong way")
-
-            r = new_task_rm.get_reward(new_task_u1, new_task_u2, s1, a, s2)
-
-            r_total += r * learning_params.gamma ** t
-
-            if task.is_env_game_over():
-                break
-
-            if new_task_rm.is_terminal_state(new_task_u2):
-                print("New Composed Task Finished!")
-                print("Steps:", t + 1)
-                print("Rewards:", r_total)
-                break
-
-            else:
-                s1, s1_features = s2, s2_features
-                new_task_u1 = new_task_u2
-                u1s[curr_policy_id] = curr_policy_u2
-
-        print("ALL FINISHED")
+# def parallel_composition_test(alg_name, tester, curriculum, num_times, show_print):
+#     learning_params = tester.learning_params
+#
+#     for n in range(num_times):
+#         random.seed(n)
+#         sess = tf.Session()
+#
+#         curriculum.restart()
+#
+#         # Initialize a policy_bank graph to be loaded with saved model
+#         task_aux = Game(tester.get_task_params(curriculum.get_current_task()))
+#         num_features = len(task_aux.get_features())
+#         num_actions = len(task_aux.get_actions())
+#         policy_bank = PolicyBankDQN(sess, num_actions, num_features,
+#                                     tester.learning_params, tester.get_reward_machines())
+#
+#         # Load the model
+#         saver = tf.train.Saver()
+#         saver.restore(sess, tf.train.latest_checkpoint('../model/' + str(task_aux.params.game_type)))
+#
+#         reward_machines = tester.get_reward_machines()
+#         print("Loaded {} policies (RMs)".format(len(reward_machines)))
+#
+#         # partial-ordered RM of new task
+#         new_task_rm = RewardMachine('../experiments/office/reward_machines/new_task.txt')
+#         new_task_u1 = new_task_rm.get_initial_state()
+#
+#         # simulator for running new task
+#         task = Game(tester.get_task_params(curriculum.get_current_task()))
+#         s1, s1_features = task.get_state_and_features()
+#
+#         # the initial state of all learned policies
+#         u1s = [rm.get_initial_state() for rm in reward_machines]
+#         curr_policy = None  # current RM we are following
+#         r_total = 0
+#         old_high_level_prop = None
+#
+#         for t in range(tester.testing_params.num_steps):
+#             task.render()
+#             # Get the current high-level action we want to execute
+#             if curr_policy is None:
+#                 high_level_prop = new_task_rm.get_random_next_prop(new_task_u1)
+#                 old_high_level_prop = high_level_prop
+#             else:
+#                 high_level_prop = old_high_level_prop
+#
+#             # From pool of learned RMs, pick one that **possibly** executes the high-level action
+#             # TODO: might not execute another path of be stuck infinite loop
+#             if curr_policy is None:
+#                 for i, rm in enumerate(reward_machines):
+#                     next_state = rm.get_next_state(u1s[i], high_level_prop)
+#                     if next_state != rm.u_broken and next_state != u1s[i]:
+#                         print("Got a RM to follow because {} have transition {}".format(i, high_level_prop))
+#                         curr_policy = rm
+#                         # break
+#
+#             # WE'RE STUCK
+#             if curr_policy is None:
+#                 print("STUCK! Want to take " + high_level_prop)
+#                 print(u1s)
+#                 # Option 1: Update other RM states after taking each action
+#                 #           - i.e. break apart the policy [coffee->office] into [coffee] and [office]
+#                 # Option 2: Re-plan
+#
+#             # Follow this current policy until reaches the desired next state
+#             curr_policy_id = reward_machines.index(curr_policy)
+#             a = policy_bank.get_best_action(curr_policy_id, u1s[curr_policy_id],
+#                                             s1_features.reshape((1, num_features)),
+#                                             add_noise=False)
+#
+#             task.execute_action(a)
+#             s2, s2_features = task.get_state_and_features()
+#
+#             # u2s = []    # all learned policies new states
+#             # for i, rm in enumerate(reward_machines):
+#             #     u2s.append(rm.get_next_state(u1s[i], task.get_true_propositions()))
+#
+#             curr_policy_u2 = curr_policy.get_next_state(u1s[curr_policy_id], task.get_true_propositions())
+#             new_task_u2 = new_task_rm.get_next_state(new_task_u1, task.get_true_propositions())
+#
+#             # check if current policy successfully executed the selected action
+#             desired_next_state = curr_policy.get_next_state(u1s[curr_policy_id], high_level_prop)
+#             if curr_policy_u2 == desired_next_state:
+#                 print("EXECUTED ACTION {}, SWITCHING POLICIES".format(high_level_prop))
+#                 # If a small policy reaches terminal, reset it to the initial state to be re-used
+#                 if reward_machines[curr_policy_id]._is_terminal(curr_policy_u2):
+#                     curr_policy_u2 = reward_machines[curr_policy_id].u0
+#                 curr_policy = None
+#             elif curr_policy_u2 == u1s[curr_policy_id]:
+#                 print("Follow current policy, don't switch")
+#             else:
+#                 print("Oops, wrong way")
+#
+#             r = new_task_rm.get_reward(new_task_u1, new_task_u2, s1, a, s2)
+#
+#             r_total += r * learning_params.gamma ** t
+#
+#             if task.is_env_game_over():
+#                 break
+#
+#             if new_task_rm.is_terminal_state(new_task_u2):
+#                 print("New Composed Task Finished!")
+#                 print("Steps:", t + 1)
+#                 print("Rewards:", r_total)
+#                 break
+#
+#             else:
+#                 s1, s1_features = s2, s2_features
+#                 new_task_u1 = new_task_u2
+#                 u1s[curr_policy_id] = curr_policy_u2
+#
+#         print("ALL FINISHED")

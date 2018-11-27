@@ -53,6 +53,7 @@ class LandmarkNode:
             res.append(f.as_filename())
         return "-".join(res)
 
+
 class LandmarkGraph:
     """
     This is the actual LandmarkGraph generated from Fast Downward
@@ -197,7 +198,7 @@ class EdgeType(Enum):
 
 class LandmarkStatus(Enum):
     """
-    TODO: not sure if this is useful
+    From FastDownward
     """
     lm_reached = 0
     lm_not_reached = 1
