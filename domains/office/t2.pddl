@@ -1,6 +1,6 @@
 ; deliver coffee
 
-(define (problem t1)
+(define (problem t2)
 	(:domain officeworld)
 	(:objects
 	)

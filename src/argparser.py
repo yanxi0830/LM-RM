@@ -1,4 +1,4 @@
-def add_training_args(parser) :
+def add_training_args(parser):
     algorithms = ["dqn", "hrl", "hrl-rm", "qrm"]
     worlds = ["office", "craft"]
 
@@ -36,5 +36,14 @@ def add_run_args(parser):
                         help='High-level plan file, this is generated using Fast Downward')
     parser.add_argument('--rm_file_dest', default="../experiments/office/reward_machines/new_task.txt", type=str,
                         help='Reward Machine spec file destination to save to')
+
+    return parser
+
+
+def add_landmark_args(parser):
+    parser.add_argument('--domain_file', default="../domains/office/domain.pddl", type=str,
+                        help='High-level domain file')
+    parser.add_argument('--prob_file', default="../domains/office/t2.pddl", type=str,
+                        help='High-level problem file')
 
     return parser
