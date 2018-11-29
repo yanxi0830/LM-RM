@@ -44,6 +44,5 @@ if __name__ == "__main__":
     c1.add_child((1, 0), 'f')
     c1.add_child((3, 0), 'f')
     c2.add_child((1, 0), 'f')
-    c3.add_child(())
 
     print(root)

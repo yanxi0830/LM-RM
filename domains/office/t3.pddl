@@ -1,6 +1,6 @@
 ; deliver mail and coffee
 
-(define (problem t1)
+(define (problem t3)
 	(:domain officeworld)
 	(:objects
 	)
@@ -9,6 +9,10 @@
 	(:goal (and
 	(delivered-mail)
     (delivered-coffee)
+    (visited-A)
+    (visited-B)
+    (visited-C)
+    (visited-D)
 		)
 	)
 )

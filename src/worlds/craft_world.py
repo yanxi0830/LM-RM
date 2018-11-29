@@ -154,6 +154,9 @@ class CraftWorld:
         if self.consider_night:
             print("Steps before night:", self._steps_before_dark(), "Current time:", self.hour)
 
+    def show(self):
+        self.show_map()
+
     def __str__(self):
         r = ""
         for i in range(self.map_height):

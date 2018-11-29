@@ -56,7 +56,86 @@ def run_qrm_save_model(alg_name, tester, curriculum, num_times, show_print):
     print("Time:", "%0.2f" % ((time.time() - time_init) / 60), "mins")
 
 
-def load_model_and_test_composition(alg_name, tester, curriculum, num_times, show_print):
+def build_policy_graph(prop_order, reward_machines):
+    """
+    Given linearized plan sequence, build the graph of the possible policy
+    sequence that can be chosen
+    :param prop_order:
+    :param reward_machines:
+    :return: PolicyGraph
+    """
+    root = PolicyGraph([], dict())
+    children = [root]
+    for p in prop_order:
+        next_level_children = []
+        for rm_id, rm in enumerate(reward_machines):
+            state_id = rm.get_state_with_transition(p)
+            if state_id is not None:
+                for c in children:
+                    next_level_child = c.add_child((rm_id, state_id, p), p)
+                    next_level_children.append(next_level_child)
+        children = next_level_children
+
+    return root
+
+
+def search_policy(prop_order, tester, curriculum, new_task_rm, reward_machines, policy_bank, bound=np.inf):
+    """
+    Given a linearized plan sequence, do a exhaustive search over the sequence of RM policies
+    to execute that achieves most optimal cost.
+    :param prop_order: sequence of high-level actions
+    :return: cost, sequence of policies (RM-id, state_id)
+    """
+    policy_graph = build_policy_graph(prop_order, reward_machines)
+    # Follow the graph during execution to calculate the cost
+    all_policies = policy_graph.flatten_all_paths([])
+    min_costs = np.full(len(all_policies), np.inf)
+    for j, p in enumerate(copy.deepcopy(all_policies)):
+        task = Game(tester.get_task_params(curriculum.get_current_task()))
+        num_features = len(task.get_features())
+
+        new_task_u1 = new_task_rm.get_initial_state()
+        s1, s1_features = task.get_state_and_features()
+        curr_policy = None
+        for t in range(tester.testing_params.num_steps):
+            if curr_policy is None:
+                curr_policy = p.pop(0)
+            curr_policy_rm = reward_machines[curr_policy[0]]
+            a = policy_bank.get_best_action(curr_policy[0], curr_policy[1],
+                                            s1_features.reshape((1, num_features)),
+                                            add_noise=False)
+            task.execute_action(a)
+            s2, s2_features = task.get_state_and_features()
+            curr_policy_u2 = curr_policy_rm.get_next_state(curr_policy[1], task.get_true_propositions())
+            new_task_u2 = new_task_rm.get_next_state(new_task_u1, task.get_true_propositions())
+
+            desired_next_state = curr_policy_rm.get_next_state(curr_policy[1], curr_policy[2])
+            if curr_policy_u2 == desired_next_state:
+                logger.info("EXECUTED ACTION {}, SWITCHING POLICIES".format(curr_policy[2]))
+                curr_policy = None
+            elif curr_policy_u2 == curr_policy[1]:
+                logger.info("STILL FOLLOWING CURRENT POLICY {}, DON'T SWITCH".format(curr_policy[2]))
+            else:
+                logger.info("OOPS, WRONG WAY, PRUNE THIS OPTION")
+                break
+
+            if task.is_env_game_over() or t + 1 >= np.min(min_costs) or t + 1 >= bound:
+                break
+
+            if new_task_rm.is_terminal_state(new_task_u2):
+                print("NEW COMPOSED TASK FINISHED WITH {}".format(all_policies[j]))
+                print("STEPS:", t + 1)
+                min_costs[j] = t + 1
+                break
+            else:
+                s1, s1_features = s2, s2_features
+                new_task_u1 = new_task_u2
+
+    min_idx = np.argmin(min_costs)
+    return min_costs[min_idx], all_policies[min_idx]
+
+
+def load_model_and_test_composition(alg_name, tester, curriculum, num_times, new_task, show_print):
     for n in range(num_times):
         random.seed(n)
         sess = tf.Session()
@@ -78,96 +157,22 @@ def load_model_and_test_composition(alg_name, tester, curriculum, num_times, sho
         print("Loaded {} policies (RMs)".format(len(reward_machines)))
 
         # partial-ordered RM of new task
-        # TODO: integrate with planner_utils.py
-        new_task_rm = RewardMachine('../experiments/office/reward_machines/new_task.txt')
-        linearized_plans = [['e', 'f', 'g'], ['f', 'e', 'g']]
+        new_task_rm = RewardMachine(new_task.rm_file)
+        linearized_plans = new_task.get_linearized_plan()
         least_cost = float('inf')
         best_policy = []  # list of (rm_id, state_id) corresponding to each action
 
-        def build_policy_graph(prop_order):
-            """
-            Given linearized plan sequence, build the graph of the possible policy
-            sequence that can be chosen
-            :param prop_order:
-            :return: PolicyGraph
-            """
-            root = PolicyGraph([], dict())
-            children = [root]
-            for p in prop_order:
-                next_level_children = []
-                for rm_id, rm in enumerate(reward_machines):
-                    state_id = rm.get_state_with_transition(p)
-                    if state_id is not None:
-                        for c in children:
-                            next_level_child = c.add_child((rm_id, state_id, p), p)
-                            next_level_children.append(next_level_child)
-                children = next_level_children
-
-            return root
-
-        def search_policy(prop_order):
-            """
-            Given a linearized plan sequence, do a search over the sequence of RM policies
-            to execute that achieves most optimal cost
-            :param prop_order: sequence of high-level actions
-            :return: cost, sequence of policies (RM-id, state_id)
-            """
-            policy_graph = build_policy_graph(prop_order)
-            # Follow the graph during execution to calculate the cost
-            all_policies = policy_graph.flatten_all_paths([])
-            min_costs = np.full(len(all_policies), np.inf)
-            for j, p in enumerate(copy.deepcopy(all_policies)):
-                task = Game(tester.get_task_params(curriculum.get_current_task()))
-                new_task_u1 = new_task_rm.get_initial_state()
-                s1, s1_features = task.get_state_and_features()
-                curr_policy = None
-                for t in range(tester.testing_params.num_steps):
-                    if curr_policy is None:
-                        curr_policy = p.pop(0)
-                    curr_policy_rm = reward_machines[curr_policy[0]]
-                    a = policy_bank.get_best_action(curr_policy[0], curr_policy[1],
-                                                    s1_features.reshape((1, num_features)),
-                                                    add_noise=False)
-                    task.execute_action(a)
-                    s2, s2_features = task.get_state_and_features()
-                    curr_policy_u2 = curr_policy_rm.get_next_state(curr_policy[1], task.get_true_propositions())
-                    new_task_u2 = new_task_rm.get_next_state(new_task_u1, task.get_true_propositions())
-
-                    desired_next_state = curr_policy_rm.get_next_state(curr_policy[1], curr_policy[2])
-                    if curr_policy_u2 == desired_next_state:
-                        logger.info("EXECUTED ACTION {}, SWITCHING POLICIES".format(curr_policy[2]))
-                        curr_policy = None
-                    elif curr_policy_u2 == curr_policy[1]:
-                        logger.info("STILL FOLLOWING CURRENT POLICY {}, DON'T SWITCH".format(curr_policy[2]))
-                    else:
-                        logger.info("OOPS, WRONG WAY, PRUNE THIS OPTION")
-                        break
-
-                    if task.is_env_game_over() or t + 1 >= np.min(min_costs):
-                        break
-
-                    if new_task_rm.is_terminal_state(new_task_u2):
-                        print("NEW COMPOSED TASK FINISHED WITH {}".format(all_policies[j]))
-                        print("STEPS:", t + 1)
-                        min_costs[j] = t+1
-                        break
-                    else:
-                        s1, s1_features = s2, s2_features
-                        new_task_u1 = new_task_u2
-
-            min_idx = np.argmin(min_costs)
-            return min_costs[min_idx], all_policies[min_idx]
-
         for i, curr_plan in enumerate(linearized_plans):
             # Get the least cost path for the current linearized plan
-            cost, switching_seq = search_policy(curr_plan)
-            print(cost, switching_seq)
+            cost, switching_seq = search_policy(curr_plan, tester, curriculum, new_task_rm, reward_machines, policy_bank, bound=least_cost)
+            if cost < tester.testing_params.num_steps:
+                print(cost, switching_seq)
             if cost < least_cost:
                 least_cost = cost
                 best_policy = switching_seq
 
         # Execute the best policy
-        print("Executing Best Policy...{}".format(best_policy))
+        print("Executing Best Policy...{} ({} steps)".format(best_policy, least_cost))
         task = Game(tester.get_task_params(curriculum.get_current_task()))
         new_task_u1 = new_task_rm.get_initial_state()
         s1, s1_features = task.get_state_and_features()

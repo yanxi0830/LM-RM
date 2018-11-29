@@ -36,7 +36,8 @@ class OfficeWorld:
             if action == Actions.down: y -= 1
             if action == Actions.left: x -= 1
             if action == Actions.right: x += 1
-        self.agent = (x, y)
+        if (x, y) not in self.obstacle_positions:
+            self.agent = (x, y)
 
     def get_actions(self):
         """
@@ -126,6 +127,7 @@ class OfficeWorld:
         self.objects[(10, 4)] = "n"  # PLANT
         # Adding walls
         self.forbidden_transitions = set()
+        self.obstacle_positions = {(4, 1), (7, 1), (4, 7), (7, 7), (1, 4), (10, 4)}
         # general grid
         for x in range(12):
             for y in [0, 3, 6]:

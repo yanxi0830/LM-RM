@@ -86,6 +86,17 @@ def compute_pop(domain_file, prob_file, plan_file):
     return pop_good
 
 
+def compute_linearized_plans(pop):
+    plans = linearize(pop)
+    # map action to propositions
+    plan_props = set()
+    for linear_plan in plans:
+        # remove init/goal
+        plan_actions = linear_plan[1:-1]
+        plan_props.add(tuple(map(lambda x: ACTION2PROP[str(x)], plan_actions)))
+    return plan_props
+
+
 def pop_to_rm_network(pop):
     """
     Return visual network for RewardMachine from pop plan
@@ -142,16 +153,37 @@ def rm_net_to_reward_machine(rm_net):
     return rm
 
 
+def compute_and_save_rm_spec(domain_file, prob_file, plan_file, rm_file_dest, render=False):
+    pop = compute_pop(domain_file, prob_file, plan_file)
+    task_rm_net = pop_to_rm_network(pop)
+    if render:
+        nx.draw_networkx(task_rm_net, pos=nx.shell_layout(task_rm_net), with_labels=False)
+        nx.draw_networkx_edge_labels(task_rm_net, pos=nx.shell_layout(task_rm_net))
+        plt.show()
+
+    task_rm = rm_net_to_reward_machine(task_rm_net)
+    spec = task_rm.get_txt_representation()
+
+    write_file(rm_file_dest, spec)
+
+    return pop
+
+
 if __name__ == "__main__":
     domain_file = "../../domains/office/domain.pddl"
-    prob_file = "../../domains/office/t4.pddl"
-    plan_file = "../../domains/office/t4.plan"
+    prob_file = "../../domains/office/t3.pddl"
+    plan_file = "../../domains/office/t3.plan"
+    rm_file_dest = "../../experiments/office/reward_machines/new_task1.txt"
 
-    rm_net1 = pop_to_rm_network(compute_pop(domain_file, prob_file, plan_file))
-    nx.draw_networkx(rm_net1, pos=nx.shell_layout(rm_net1), with_labels=False)
-    nx.draw_networkx_edge_labels(rm_net1, pos=nx.shell_layout(rm_net1))
-    plt.show()
+    # compute_linearized_plans(domain_file, prob_file, plan_file)
 
-    rm1 = rm_net_to_reward_machine(rm_net1)
-    spec = rm1.get_txt_representation()
-    print(spec)
+    compute_and_save_rm_spec(domain_file, prob_file, plan_file, rm_file_dest, render=False)
+
+    # rm_net1 = pop_to_rm_network(compute_pop(domain_file, prob_file, plan_file))
+    # nx.draw_networkx(rm_net1, pos=nx.shell_layout(rm_net1), with_labels=False)
+    # nx.draw_networkx_edge_labels(rm_net1, pos=nx.shell_layout(rm_net1))
+    # plt.show()
+    #
+    # rm1 = rm_net_to_reward_machine(rm_net1)
+    # spec = rm1.get_txt_representation()
+    # print(spec)

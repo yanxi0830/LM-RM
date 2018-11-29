@@ -7,8 +7,10 @@
 	(:init
 	)
 	(:goal (and
-    (delivered-coffee)
-    (delivered-mail)
+    (visited-A)
+    (visited-B)
+    (visited-C)
+    (visited-D)
 		)
 	)
 )

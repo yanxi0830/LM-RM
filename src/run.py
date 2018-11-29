@@ -9,7 +9,7 @@ from qrm.learning_params import LearningParameters
 from qrm.experiments import *
 # The pickle library is asking me to have access to Ball and BallAgent from the main...
 from worlds.water_world import Ball, BallAgent
-
+from reward_machines.task import Task
 
 def get_params_craft_world(experiment):
     step_unit = 1000
@@ -173,16 +173,18 @@ def run_experiment(world, alg_name, experiment, num_times, show_print):
 
 
 if __name__ == "__main__":
-    experiment = "../experiments/office/tests/office.txt"
-    testing_params, learning_params, tester, curriculum = get_params_office_world(experiment)
+    experiment = "../experiments/craft/tests/craft_0.txt"
+    testing_params, learning_params, tester, curriculum = get_params_craft_world(experiment)
     # run_qrm_save_model("qrm", tester, curriculum, 1, False)
-    load_model_and_test_composition("qrm", tester, curriculum, 1, False)
 
+    domain_file = "../domains/craft/domain.pddl"
+    prob_file = "../domains/craft/t11.pddl"
+    plan_file = "../domains/craft/t11.plan"
+    rm_file_dest = "../experiments/craft/reward_machines/new_task.txt"
+    new_task = Task(domain_file, prob_file, plan_file, rm_file_dest)
 
-    # parallel_composition_test("qrm", tester, curriculum, 1, False)
-    # test_single_policy("qrm", tester, curriculum, 1, False)
-    # train_and_save_qrm("qrm", tester, curriculum, 1, False)
-    # load_and_test(tester, curriculum, 1, False)
+    load_model_and_test_composition("qrm", tester, curriculum, 1, new_task, False)
+
 
     # EXAMPLE: python3 run.py --algorithm="qrm" --world="craft" --map=0 --num_times=1
 

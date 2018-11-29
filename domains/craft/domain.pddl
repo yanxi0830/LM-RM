@@ -111,8 +111,7 @@
   (:action make-bridge
     :parameters ()
     :precondition (and (have-iron) (have-wood))
-    :effect (and
-              (not (have-iron))
+    :effect (and              (not (have-iron))
               (not (have-wood))
               (have-bridge))
     )

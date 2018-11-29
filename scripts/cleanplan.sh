@@ -20,4 +20,8 @@ cd $PLANNER
 ./fast-downward.py --translate $TASK
 ./fast-downward.py --alias seq-sat-lama-2011 output.sas
 
-head -n -1 ./sas_plan.1 > $TASK_DIR/$TASK_NAME.plan
+if [ -e ./sas_plan.2 ]; then
+    head -n -1 ./sas_plan.2 > $TASK_DIR/$TASK_NAME.plan
+else
+    head -n -1 ./sas_plan.1 > $TASK_DIR/$TASK_NAME.plan
+fi

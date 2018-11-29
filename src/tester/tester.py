@@ -56,8 +56,6 @@ class Tester:
                 self.world = TesterWaterWorld(None, None, data['world'])
             if self.game_type == "officeworld":
                 self.world = TesterOfficeWorld(None, None, data['world'])
-            if self.game_type == "boxworld":
-                self.world = TesterBoxWorld(None, None, None, data['world'])
 
             self.results = data['results']
             self.steps = data['steps']
