@@ -11,9 +11,11 @@ ACTION2PROP = {
 
     '(get-wood)': 'a',
     '(get-wood-1)': 'a',
+    '(get-wood-2)': 'a',
     '(get-grass)': 'd',
     '(get-iron)': 'f',
     '(make-plank)': 'b',
+    '(make-plank-3)': 'b',
     '(make-rope)': 'b',
     '(make-axe)': 'b',
     '(make-bed)': 'c',

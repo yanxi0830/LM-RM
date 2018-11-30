@@ -35,6 +35,10 @@ class CraftWorld:
             self.sunrise = 5
             self.sunset = 21
 
+    def get_map_id(self):
+        map_id = os.path.basename(self.params.file_map)
+        return os.path.splitext(map_id)[0]
+
     def execute_action(self, a):
         """
         We execute 'action' in the game

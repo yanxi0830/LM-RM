@@ -48,7 +48,10 @@ def run_qrm_save_model(alg_name, tester, curriculum, num_times, show_print):
             run_qrm_task(sess, rm_file, policy_bank, tester, curriculum, replay_buffer, beta_schedule, show_print)
 
         # Save session
-        save_model_path = '../model/' + str(task_aux.params.game_type) + '/' + str(alg_name)
+        if task_aux.params.game_type == "craftworld":
+            save_model_path = '../model/' + str(task_aux.params.game_type) + '/' + task_aux.game.get_map_id() + '/' + str(alg_name)
+        else:
+            save_model_path = '../model/' + str(task_aux.params.game_type) + '/' + str(alg_name)
         print("Saving model to {} ...".format(save_model_path))
         saver = tf.train.Saver()
         saver.save(sess, save_model_path)
@@ -151,7 +154,15 @@ def load_model_and_test_composition(alg_name, tester, curriculum, num_times, new
 
         # Load the model
         saver = tf.train.Saver()
-        saver.restore(sess, tf.train.latest_checkpoint('../model/' + str(task_aux.params.game_type)))
+
+        # Get path
+        if task_aux.params.game_type == "craftworld":
+            save_model_path = '../model/' + str(
+                task_aux.params.game_type) + '/' + task_aux.game.get_map_id()
+        else:
+            save_model_path = '../model/' + str(task_aux.params.game_type)
+
+        saver.restore(sess, tf.train.latest_checkpoint(save_model_path))
 
         reward_machines = tester.get_reward_machines()
         print("Loaded {} policies (RMs)".format(len(reward_machines)))

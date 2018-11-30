@@ -35,7 +35,7 @@ def run_qrm_task(sess, rm_file, policy_bank, tester, curriculum, replay_buffer, 
     for t in range(num_steps):
 
         # Choosing an action to perform (more exploration)
-        if random.random() < 0.3:
+        if random.random() < 0.1:
             a = random.choice(actions)
         else:
             a = policy_bank.get_best_action(task_rm_id, u1, s1_features.reshape((1, num_features)))

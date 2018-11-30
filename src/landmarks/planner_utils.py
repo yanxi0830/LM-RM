@@ -169,21 +169,10 @@ def compute_and_save_rm_spec(domain_file, prob_file, plan_file, rm_file_dest, re
     return pop
 
 
-if __name__ == "__main__":
-    domain_file = "../../domains/office/domain.pddl"
-    prob_file = "../../domains/office/t3.pddl"
-    plan_file = "../../domains/office/t3.plan"
-    rm_file_dest = "../../experiments/office/reward_machines/new_task1.txt"
-
-    # compute_linearized_plans(domain_file, prob_file, plan_file)
-
-    compute_and_save_rm_spec(domain_file, prob_file, plan_file, rm_file_dest, render=False)
-
-    # rm_net1 = pop_to_rm_network(compute_pop(domain_file, prob_file, plan_file))
-    # nx.draw_networkx(rm_net1, pos=nx.shell_layout(rm_net1), with_labels=False)
-    # nx.draw_networkx_edge_labels(rm_net1, pos=nx.shell_layout(rm_net1))
-    # plt.show()
-    #
-    # rm1 = rm_net_to_reward_machine(rm_net1)
-    # spec = rm1.get_txt_representation()
-    # print(spec)
+# if __name__ == "__main__":
+#     domain_file = "../../domains/office/domain.pddl"
+#     prob_file = "../../domains/office/t3.pddl"
+#     plan_file = "../../domains/office/t3.plan"
+#     rm_file_dest = "../../experiments/office/reward_machines/new_task1.txt"
+#
+#     compute_and_save_rm_spec(domain_file, prob_file, plan_file, rm_file_dest, render=False)
