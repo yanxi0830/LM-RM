@@ -61,7 +61,7 @@
 		(position-predecessor cursor-0 cursor-1)
 	)
 	(:goal (and
-		(char-at lo-z cursor-0)
+		(char-at up-z cursor-0)
 		)
 	)
 )
