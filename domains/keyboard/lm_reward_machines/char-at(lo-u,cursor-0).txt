@@ -1,0 +1,4 @@
+0			 # initial state
+(0,1,'u',ConstantRewardFunction(1))
+(0,0,'!u',ConstantRewardFunction(0))
+(1,1,'True',ConstantRewardFunction(0))

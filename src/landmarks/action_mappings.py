@@ -24,5 +24,18 @@ ACTION2PROP = {
     '(make-cloth)': 'e',
     '(make-bridge)': 'e',
     '(get-gold)': 'g',
-    '(get-gem)': 'h'
+    '(get-gem)': 'h',
+
+    '(lock-caps)': 'C',
+    '(unlock-caps)': 'C',
 }
+
+
+def action_to_prop(action):
+    if action in ACTION2PROP:
+        return ACTION2PROP[action]
+
+    # type actions map to key-value
+    if 'type' in action:
+        event = action.split(" ")[1]
+        return event
