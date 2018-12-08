@@ -14,7 +14,7 @@ from reward_machines.reward_functions import ConstantRewardFunction
 import os
 from subprocess import call
 import matplotlib.pyplot as plt
-from landmarks.action_mappings import ACTION2PROP
+from landmarks.action_mappings import action_to_prop
 
 CLEANPLAN = "~/git/LM-RM/scripts/cleanplan.sh"
 
@@ -132,7 +132,7 @@ def rm_net_to_reward_machine(rm_net):
         selfloop = []
         for child in rm_net.successors(node):
             action = rm_net.get_edge_data(node, child)['attr']
-            event_prop = ACTION2PROP[str(action)]
+            event_prop = action_to_prop(str(action))
             if event_prop in selfloop:
                 selfloop.pop(selfloop.index(event_prop))
             else:

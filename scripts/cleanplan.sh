@@ -21,7 +21,7 @@ cd $PLANNER
 ./fast-downward.py --alias seq-sat-lama-2011 output.sas
 
 if [ -e ./sas_plan.2 ]; then
-    head -n -1 ./sas_plan.2 > $TASK_DIR/$TASK_NAME.plan
+    ghead -n -1 ./sas_plan.2 > $TASK_DIR/$TASK_NAME.plan
 else
-    head -n -1 ./sas_plan.1 > $TASK_DIR/$TASK_NAME.plan
+    ghead -n -1 ./sas_plan.1 > $TASK_DIR/$TASK_NAME.plan
 fi

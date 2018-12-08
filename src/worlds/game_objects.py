@@ -68,3 +68,4 @@ class Actions(Enum):
     left = 3  # move left
     none = 4  # none or pick
     drop = 5
+    jump = 6

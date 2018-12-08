@@ -93,6 +93,8 @@ def train_policy(world, alg_name, experiment, num_times, show_print):
         testing_params, learning_params, tester, curriculum = get_params_office_world(experiment)
     if world == 'craftworld':
         testing_params, learning_params, tester, curriculum = get_params_craft_world(experiment)
+    if world == 'keyboardworld':
+        testing_params, learning_params, tester, curriculum = get_params_craft_world(experiment)
 
     if alg_name == "qrm":
         run_qrm_save_model(alg_name, tester, curriculum, num_times, show_print)
