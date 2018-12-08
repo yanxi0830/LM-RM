@@ -30,7 +30,8 @@ class RewardMachine:
             for u2 in self.delta_u[u1]:
                 if evaluate_dnf(self.delta_u[u1][u2], true_props):
                     return u2
-        return self.u_broken  # no transition is defined for true_props
+        return u1   # if there is no transition, stay at current state!
+        # return self.u_broken  # no transition is defined for true_props
 
     def get_reward(self, u1, u2, s1, a, s2):
         if u1 in self.delta_r and u2 in self.delta_r[u1]:

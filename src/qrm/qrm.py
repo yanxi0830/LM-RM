@@ -125,7 +125,6 @@ def run_qrm_test(sess, reward_machines, task_params, task_rm_id, learning_params
     for t in range(testing_params.num_steps):
         # Choosing an action using the right policy
         a = policy_bank.get_best_action(task_rm_id, u1, s1_features.reshape((1, num_features)), add_noise=False)
-
         # Executing the action
         task.execute_action(a)
         s2, s2_features = task.get_state_and_features()

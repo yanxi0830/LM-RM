@@ -43,7 +43,6 @@ class KeyboardWorld:
         # So far, an action can only fail if the new position is a wall
         if action_succeeded:
             agent.change_position(ni, nj)
-
         self.last_action = action
 
     def _get_next_position(self, action):
@@ -188,6 +187,7 @@ def play(params, task, max_time):
         # Showing game
         game.show_map()
         print("Events:", game.get_true_propositions())
+        print("Features:", game.get_features())
         acts = game.get_actions()
         # Getting action
         print("\nAction? ", end="")
