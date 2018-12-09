@@ -129,7 +129,10 @@ def search_policy(prop_order, tester, curriculum, new_task_rm, reward_machines, 
                 print("NEW COMPOSED TASK FINISHED WITH {}".format(all_policies[j]))
                 print("STEPS:", t + 1)
                 min_costs[j] = t + 1
-                break
+                min_idx = np.argmin(min_costs)
+                # TEMPORARY WORKAROUND FOR keyboardworld, stop searching since policies are the same..
+                return min_costs[min_idx], all_policies[min_idx]
+                # break
             else:
                 s1, s1_features = s2, s2_features
                 new_task_u1 = new_task_u2

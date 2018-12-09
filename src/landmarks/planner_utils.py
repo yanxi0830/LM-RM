@@ -93,7 +93,7 @@ def compute_linearized_plans(pop):
     for linear_plan in plans:
         # remove init/goal
         plan_actions = linear_plan[1:-1]
-        plan_props.add(tuple(map(lambda x: ACTION2PROP[str(x)], plan_actions)))
+        plan_props.add(tuple(map(lambda x: action_to_prop(str(x)), plan_actions)))
     return plan_props
 
 
