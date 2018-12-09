@@ -29,6 +29,7 @@ class MouseWorld:
         self._load_map()
         self.last_action = -1
         self.true_props = ""
+        self.env_game_over = False
 
         # fields for display only, not relevant for training
         self.current_text_field = ""
