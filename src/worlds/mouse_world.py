@@ -153,8 +153,9 @@ class MouseWorld:
         radius = self.params.m_radius
 
         # Adding the agent
-        pos_a = [2 * radius + random.random() * (max_x - 2 * radius),
-                 2 * radius + random.random() * (max_y - 2 * radius)]
+        # pos_a = [2 * radius + random.random() * (max_x - 2 * radius),
+        #          2 * radius + random.random() * (max_y - 2 * radius)]
+        pos_a = [2 * radius, 2 * radius]
         self.agent = MouseAgent(radius, pos_a, [0.0, 0.0], actions, vel_delta, vel_max)
 
         # Adding static keyboard keys
@@ -293,10 +294,10 @@ def play():
 
         if reward > 0:
             print("REWARD ", reward)
-        # if rm.is_terminal_state(u2):
-        #     print("Machine state:", u2, "(terminal)")
-        # else:
-        #     print("Machine state:", u2)
+        if rm.is_terminal_state(u2):
+            print("Machine state:", u2, "(terminal)")
+        else:
+            print("Machine state:", u2)
 
         # Printing Image
         gameDisplay.fill(Colors.WHITE.value)

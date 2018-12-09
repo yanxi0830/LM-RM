@@ -49,6 +49,8 @@ def run_qrm_task(sess, rm_file, policy_bank, tester, curriculum, replay_buffer, 
         events = task.get_true_propositions()
         u2 = rm.get_next_state(u1, events)
         reward = rm.get_reward(u1, u2, s1, a, s2)
+        if reward > 0:
+            print("REWARD {} from {} (Step {})".format(reward, events, t+1))
         training_reward += reward
 
         # Getting rewards and next states for each reward machine
