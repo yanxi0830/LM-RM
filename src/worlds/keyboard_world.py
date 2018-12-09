@@ -2,12 +2,6 @@ from worlds.game_objects import *
 import numpy as np
 import os
 
-if __name__ == '__main__':
-    # This is a terrible hack just to be able to execute this file directly
-    import sys
-
-    sys.path.insert(0, '../')
-
 
 class KeyboardWorldParams:
     def __init__(self, file_map, use_tabular_representation):

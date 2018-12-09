@@ -1,6 +1,7 @@
 from worlds.office_world import OfficeWorldParams, OfficeWorld
 from worlds.craft_world import CraftWorldParams, CraftWorld
 from worlds.keyboard_world import KeyboardWorldParams, KeyboardWorld
+from worlds.water_world import WaterWorldParams, WaterWorld
 
 class GameParams:
     """
@@ -10,7 +11,7 @@ class GameParams:
     def __init__(self, game_type, game_params):
         self.game_type = game_type
         self.game_params = game_params
-        if self.game_type not in ["officeworld", "craftworld", "keyboardworld"]:
+        if self.game_type not in ["officeworld", "craftworld", "keyboardworld", "waterworld"]:
             print(self.game_type, "is not currently supported")
             exit()
 
@@ -25,6 +26,8 @@ class Game:
             self.game = CraftWorld(params.game_params)
         if params.game_type == "keyboardworld":
             self.game = KeyboardWorld(params.game_params)
+        if params.game_type == "waterworld":
+            self.game = WaterWorld(params.game_params)
 
     def is_env_game_over(self):
         return self.game.env_game_over

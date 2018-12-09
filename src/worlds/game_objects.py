@@ -66,6 +66,6 @@ class Actions(Enum):
     right = 1  # move right
     down = 2  # move down
     left = 3  # move left
-    jump = 4
-    # none = 5  # none or pick
+    jump = 4  # jump or click
+    none = 5  # none
     # drop = 6
