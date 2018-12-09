@@ -1,7 +1,7 @@
 (define (problem t1)
 	(:domain keyboardworld)
 	(:objects
-		cursor-0 cursor-1 cursor-2 cursor-3 - cursor-position
+		cursor-0 cursor-1 cursor-2 cursor-3 cursor-4 cursor-5 cursor-6 cursor-7 cursor-8 cursor-9 cursor-10 - cursor-position
 	)
 	(:init
 		(caps-off)
@@ -61,11 +61,25 @@
 		(position-predecessor cursor-0 cursor-1)
 		(position-predecessor cursor-1 cursor-2)
 		(position-predecessor cursor-2 cursor-3)
+		(position-predecessor cursor-3 cursor-4)
+		(position-predecessor cursor-4 cursor-5)
+		(position-predecessor cursor-5 cursor-6)
+		(position-predecessor cursor-6 cursor-7)
+		(position-predecessor cursor-7 cursor-8)
+		(position-predecessor cursor-8 cursor-9)
+		(position-predecessor cursor-9 cursor-10)
 	)
 	(:goal (and
-		(char-at up-a cursor-0)
-		(char-at up-b cursor-1)
-		(char-at lo-a cursor-2)
+		(char-at up-h cursor-0)
+		(char-at lo-e cursor-1)
+		(char-at lo-l cursor-2)
+		(char-at lo-l cursor-3)
+		(char-at lo-o cursor-4)
+		(char-at up-w cursor-5)
+		(char-at lo-o cursor-6)
+		(char-at lo-r cursor-7)
+		(char-at lo-l cursor-8)
+		(char-at lo-d cursor-9)
 		)
 	)
 )

@@ -39,3 +39,5 @@ def action_to_prop(action):
     if 'type' in action:
         event = action.split(" ")[1]
         return event
+    if 'caps' in action:
+        return 'C'

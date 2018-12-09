@@ -23,7 +23,7 @@ def get_partial_ordered_rm(file_params, lm_node):
     lm_prob_file = construct_problem_file(file_params, lm_node)
     # execute cleanplan.sh to get sequential plan
     # PyCharm bug, running this in PyCharm gives UTF CodecError...run with command line or do some pre-processing
-    os.system("{} {}".format(CLEANPLAN,lm_prob_file))
+    os.system("{} {}".format(CLEANPLAN, lm_prob_file))
 
     # use sequential plan, domain, lm_prob to get POP
     lm_plan_file = os.path.splitext(lm_prob_file)[0] + ".plan"
@@ -34,7 +34,8 @@ def get_partial_ordered_rm(file_params, lm_node):
     # plt.show()
     rm = rm_net_to_reward_machine(rm_net)
     spec = rm.get_txt_representation()
-    lm_rm_file = os.path.dirname(file_params.domain_file) + "/lm_reward_machines/" + str(lm_node.facts_as_filename()) + ".txt"
+    lm_rm_file = os.path.dirname(file_params.domain_file) + "/lm_reward_machines/" + str(
+        lm_node.facts_as_filename()) + ".txt"
 
     write_file(lm_rm_file, spec)
     # print(lm_rm_file)
@@ -169,6 +170,23 @@ def compute_and_save_rm_spec(domain_file, prob_file, plan_file, rm_file_dest, re
     return pop
 
 
+def save_sequential_rm_spec(domain_file, prob_file, plan_file, rm_file_dest, render=False):
+    plan = parse_output_ipc(plan_file)
+    seq_pop = lift_POP(domain_file, prob_file, plan, True)
+
+    task_rm_net = pop_to_rm_network(seq_pop)
+
+    if render:
+        nx.draw_networkx(task_rm_net, pos=nx.shell_layout(task_rm_net), with_labels=False)
+        nx.draw_networkx_edge_labels(task_rm_net, pos=nx.shell_layout(task_rm_net))
+        plt.show()
+
+    task_rm = rm_net_to_reward_machine(task_rm_net)
+    spec = task_rm.get_txt_representation()
+
+    write_file(rm_file_dest, spec)
+
+    return seq_pop
 # if __name__ == "__main__":
 #     domain_file = "../../domains/office/domain.pddl"
 #     prob_file = "../../domains/office/t3.pddl"
