@@ -1,0 +1,2 @@
+"mouseworld"
+["../experiments/mouse/reward_machines/t%d.txt"%i for i in range(1, 54)]  # tasks

@@ -2,6 +2,7 @@ from tester.tester_craft import TesterCraftWorld
 from tester.tester_office import TesterOfficeWorld
 from tester.tester_water import TesterWaterWorld
 from tester.tester_keyboard import TesterKeyboardWorld
+from tester.tester_mouse import TesterMouseWorld
 from reward_machines.reward_machine import RewardMachine
 from tester.test_utils import read_json, get_precentiles_str, get_precentiles_in_seconds, reward2steps
 import numpy as np
@@ -29,6 +30,8 @@ class Tester:
                 self.world = TesterWaterWorld(experiment, learning_params.use_random_maps)
             if self.game_type == "keyboardworld":
                 self.world = TesterKeyboardWorld(experiment, learning_params.tabular_case, learning_params.gamma)
+            if self.game_type == "mouseworld":
+                self.world = TesterMouseWorld(experiment)
 
             # Creating the reward machines for each task
             self.reward_machines = []
@@ -59,6 +62,8 @@ class Tester:
                 self.world = TesterOfficeWorld(None, None, data['world'])
             if self.game_type == "keyboardworld":
                 self.world = TesterKeyboardWorld(None, None, data['world'])
+            if self.game_type == "mouseworld":
+                self.world = TesterMouseWorld(None, None, data['world'])
 
             self.results = data['results']
             self.steps = data['steps']

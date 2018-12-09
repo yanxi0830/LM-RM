@@ -130,6 +130,59 @@ def get_params_keyboard_world(experiment):
     return testing_params, learning_params, tester, curriculum
 
 
+def get_params_mouse_world(experiment):
+    step_unit = 1000
+
+    # configuration of testing params
+    testing_params = TestingParameters()
+    testing_params.test = True
+    testing_params.test_freq = 10 * step_unit
+    testing_params.num_steps = 600  # I'm giving one minute to the agent to solve the task
+
+    # configuration of learning params
+    learning_params = LearningParameters()
+    learning_params.lr = 1e-5  # 5e-5 seems to be better than 1e-4
+    learning_params.gamma = 0.9
+    learning_params.max_timesteps_per_task = testing_params.num_steps
+    learning_params.buffer_size = 50000
+    learning_params.print_freq = step_unit
+    learning_params.train_freq = 1
+    learning_params.batch_size = 32
+    learning_params.target_network_update_freq = 100  # obs: 500 makes learning more stable, but slower
+    learning_params.learning_starts = 1000
+
+    # Tabular case
+    learning_params.tabular_case = False  # it is not possible to use tabular RL
+    learning_params.use_random_maps = False
+    learning_params.use_double_dqn = True
+    learning_params.prioritized_replay = True
+    learning_params.num_hidden_layers = 6
+    learning_params.num_neurons = 64
+
+    # Setting the experiment
+    tester = Tester(learning_params, testing_params, experiment)
+
+    # Setting the curriculum learner
+    curriculum = CurriculumLearner(tester.get_task_rms())
+    curriculum.num_steps = 300
+    curriculum.total_steps = 2000 * step_unit
+    curriculum.min_steps = 1
+
+    print("Mouse World ----------")
+    print("lr:", learning_params.lr)
+    print("batch_size:", learning_params.batch_size)
+    print("num_hidden_layers:", learning_params.num_hidden_layers)
+    print("target_network_update_freq:", learning_params.target_network_update_freq)
+    print("TRAIN gamma:", learning_params.gamma)
+    print("Total steps:", curriculum.total_steps)
+    print("tabular_case:", learning_params.tabular_case)
+    print("use_double_dqn:", learning_params.use_double_dqn)
+    print("prioritized_replay:", learning_params.prioritized_replay)
+    print("use_random_maps:", learning_params.use_random_maps)
+
+    return testing_params, learning_params, tester, curriculum
+
+
 def train_policy(world, alg_name, experiment, num_times, show_print):
     if world == 'officeworld':
         testing_params, learning_params, tester, curriculum = get_params_office_world(experiment)
@@ -137,6 +190,8 @@ def train_policy(world, alg_name, experiment, num_times, show_print):
         testing_params, learning_params, tester, curriculum = get_params_craft_world(experiment)
     if world == 'keyboardworld':
         testing_params, learning_params, tester, curriculum = get_params_keyboard_world(experiment)
+    if world == 'mouseworld':
+        testing_params, learning_params, tester, curriculum = get_params_mouse_world(experiment)
 
     if alg_name == "qrm":
         run_qrm_save_model(alg_name, tester, curriculum, num_times, show_print)

@@ -7,12 +7,12 @@ class Colors(Enum):
     BLACK = (0, 0, 0)
     WHITE = (255, 255, 255)
     RED = (255, 0, 0)
+    GREEN = (0, 255, 0)
     BLUE = (0, 0, 255)
 
 
 class MouseWorldParams:
-    def __init__(self, state_file, max_x=900, max_y=300, m_velocity=20, m_radius=10, k_radius=25):
-        self.state_file = state_file
+    def __init__(self, max_x=850, max_y=300, m_velocity=20, m_radius=10, k_radius=25):
         self.max_x = max_x
         self.max_y = max_y
         self.m_velocity_delta = m_velocity
@@ -29,35 +29,11 @@ class MouseWorld:
         self._load_map()
         self.last_action = -1
         self.true_props = ""
+
+        # fields for display only, not relevant for training
         self.current_text_field = ""
+        self.last_non_empty_true_props = ""
         self.caps_on = False
-
-    def _get_current_key_hover(self):
-        ret = set()
-        for k in self.keyboard_keys:
-            if self.agent.is_on_key(k):
-                ret.add(k)
-        return ret
-
-    def _type(self, keycode):
-        if keycode == 'C':
-            self.caps_on = not self.caps_on
-        elif self.caps_on:
-            self.current_text_field += keycode.upper()
-        else:
-            self.current_text_field += keycode
-
-    def _update_events(self):
-        self.true_props = ""
-        current_key_hover = self._get_current_key_hover()
-        if self.last_action == Actions.jump:
-            for k in current_key_hover:
-                self.true_props += k.keycode
-                self._type(k.keycode)
-
-    def draw_current_text_on_display(self, gameDisplay):
-        x, y = 30, self.params.max_y - 30
-        gameDisplay.blit(pygame.font.SysFont('Arial', 25).render(self.current_text_field, True, Colors.BLUE.value), (x, y))
 
     def get_true_propositions(self):
         return self.true_props
@@ -85,6 +61,55 @@ class MouseWorld:
             else:
                 self.agent.pos[1] = max_y - self.agent.radius
             self.agent.vel = self.agent.vel * np.array([-1.0, -1.0])
+
+    def get_actions(self):
+        return self.agent.get_actions()
+
+    def get_state(self):
+        return None
+
+    def get_features(self):
+        return self._get_agent_features()
+
+    def _get_agent_features(self):
+        # Absolute position and velocity of the agent
+        features = np.zeros(4, dtype=np.float)
+        pos_max = np.array([float(self.params.max_x), float(self.params.max_y)])
+        features[0:2] = self.agent.pos / pos_max
+        features[2:4] = self.agent.vel / float(self.params.m_velocity_max)
+        return features
+
+    def _get_current_key_hover(self):
+        ret = set()
+        for k in self.keyboard_keys:
+            if self.agent.is_on_key(k):
+                ret.add(k)
+        return ret
+
+    def _type(self, keycode):
+        if keycode == 'C':
+            self.caps_on = not self.caps_on
+        elif self.caps_on:
+            self.current_text_field += keycode.upper()
+        else:
+            self.current_text_field += keycode
+
+    def _update_events(self):
+        self.true_props = ""
+        current_key_hover = self._get_current_key_hover()
+        if self.last_action == Actions.jump:
+            for k in current_key_hover:
+                self.true_props += k.keycode
+                self._type(k.keycode)
+
+        if self.true_props != "":
+            self.last_non_empty_true_props = self.true_props
+
+    def draw_current_text_on_display(self, gameDisplay):
+        x, y = 30, self.params.max_y - 30
+        gameDisplay.blit(pygame.font.SysFont('Arial', 25).render(self.current_text_field, True, Colors.BLUE.value), (x, y))
+        gameDisplay.blit(pygame.font.SysFont('Arial', 25).render(self.last_non_empty_true_props, True, Colors.GREEN.value),
+                         (self.params.max_x - 30, y))
 
     def _load_keyboard(self):
         # QWERTY keys
@@ -193,11 +218,25 @@ class MouseAgent:
         x, y = int(self.pos[0]), int(self.pos[1])
         pygame.draw.circle(gameDisplay, Colors.RED.value, (x, y), self.radius, 3)
 
+
 def play():
-    params = MouseWorldParams(None)
+    from tester.tester import Tester
+    from tester.tester_params import TestingParameters
+    from qrm.learning_params import LearningParameters
+    from reward_machines.reward_machine import RewardMachine
+
+    import os
+    os.chdir("../")
+    tester = Tester(LearningParameters(), TestingParameters(), "../experiments/mouse/tests/mouse_0.txt")
+
+    task = tester.get_task_rms()[0]
+    params = tester.get_task_params(task).game_params
     max_x = params.max_x
     max_y = params.max_y
     game = MouseWorld(params)
+    rm = RewardMachine(task)
+    s1 = game.get_state()
+    u1 = rm.get_initial_state()
 
     pygame.init()
     gameDisplay = pygame.display.set_mode((max_x, max_y))
@@ -207,7 +246,6 @@ def play():
 
     t_previous = time.time()
     actions = set()
-
     while not crashed:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -247,6 +285,18 @@ def play():
         # Executing the action
         game.execute_action(a.value, t_delta)
 
+        s2 = game.get_state()
+        events = game.get_true_propositions()
+        u2 = rm.get_next_state(u1, events)
+        reward = rm.get_reward(u1, u2, s1, a, s2)
+
+        if reward > 0:
+            print("REWARD ", reward)
+        # if rm.is_terminal_state(u2):
+        #     print("Machine state:", u2, "(terminal)")
+        # else:
+        #     print("Machine state:", u2)
+
         # Printing Image
         gameDisplay.fill(Colors.WHITE.value)
         for k in game.keyboard_keys:
@@ -258,6 +308,7 @@ def play():
         clock.tick(20)
 
         t_previous = t_current
+        s1, u1 = s2, u2
 
     pygame.quit()
 

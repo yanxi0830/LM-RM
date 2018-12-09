@@ -1,6 +1,6 @@
 def add_training_args(parser):
     algorithms = ["dqn", "hrl", "hrl-rm", "qrm"]
-    worlds = ["office", "craft", "keyboard"]
+    worlds = ["office", "craft", "keyboard", "mouse"]
 
     parser.add_argument('--algorithm', default='qrm', type=str,
                         help='This parameter indicated which RL algorithm to use. The options are: ' + str(algorithms))
