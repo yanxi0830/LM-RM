@@ -4,7 +4,7 @@
 # Sequential plan saved to /path/to/problem/t1.plan
 # Landmark file save dto /path/to/problem/t1.landmark
 
-PLANNER=~/git/downward
+PLANNER=${BASEDIR:-$(dirname $0)/../..}/downward
 TASK=$(cd "$(dirname "$1")"; pwd)/$(basename "$1")
 TASK_DIR=$(cd "$(dirname "$1")"; pwd)
 TASK_NAME="${TASK##*/}"
@@ -20,5 +20,8 @@ cd $PLANNER
 ./fast-downward.py --translate $TASK
 ./fast-downward.py --alias seq-sat-lama-2011 output.sas
 
-ghead -n -1 ./sas_plan.1 > $TASK_DIR/$TASK_NAME.plan
+
+(type ghead &> /dev/null && HEAD=ghead) || HEAD=head
+
+$HEAD -n -1 ./sas_plan.1 > $TASK_DIR/$TASK_NAME.plan
 cat landmark.txt > $TASK_DIR/$TASK_NAME.landmark
