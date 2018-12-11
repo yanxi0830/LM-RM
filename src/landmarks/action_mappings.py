@@ -46,6 +46,8 @@ def mouse_world_action_to_prop(action):
     if 'caps' in action:
         return 'C'
 
+    raise NotImplementedError(action + " is not supported")
+
 
 def keyboard_world_action_to_prop(action):
     if action in KEYBOARD_EVENT2PROP:
@@ -57,6 +59,8 @@ def keyboard_world_action_to_prop(action):
     if 'caps' in action:
         return 'C'
 
+    raise NotImplementedError(action + " is not supported")
+
 
 def craft_world_action_to_prop(action):
     if action in CRAFT_EVENT2PROP:
@@ -67,12 +71,14 @@ def craft_world_action_to_prop(action):
     if 'plank' in action:
         return 'b'
 
+    raise NotImplementedError(action + " is not supported")
+
 
 def office_world_action_to_prop(action):
     if action in OFFICE_EVENT2PROP:
         return OFFICE_EVENT2PROP[action]
 
-    return 'IMPOSSIBLE'
+    raise NotImplementedError(action + " is not supported")
 
 
 def action_to_prop(action, world):
@@ -85,6 +91,8 @@ def action_to_prop(action, world):
     if world == "officeworld":
         return office_world_action_to_prop(action)
 
+    raise NotImplementedError(world + " is not supported")
+
 
 def get_all_events(world):
     if world == "mouseworld":
@@ -95,3 +103,5 @@ def get_all_events(world):
         return CRAFT_EVENTS
     if world == "officeworld":
         return OFFICE_EVENTS
+
+    raise NotImplementedError(world + " is not supported")
