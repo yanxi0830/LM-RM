@@ -42,9 +42,13 @@ def add_run_args(parser):
 
 
 def add_landmark_args(parser):
+    worlds = ["office", "craft", "keyboard", "mouse"]
+
     parser.add_argument('--domain_file', default="../domains/office/domain.pddl", type=str,
                         help='High-level domain file')
     parser.add_argument('--prob_file', default="../domains/office/t2.pddl", type=str,
                         help='High-level problem file')
+    parser.add_argument('--world', default='office', type=str,
+                        help='This parameter indicated which domain to run. The options are: ' + str(worlds))
 
     return parser

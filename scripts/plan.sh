@@ -20,8 +20,6 @@ cd $PLANNER
 ./fast-downward.py --translate $TASK
 ./fast-downward.py --alias seq-sat-lama-2011 output.sas
 
-
 (type ghead &> /dev/null && HEAD=ghead) || HEAD=head
-
 $HEAD -n -1 ./sas_plan.1 > $TASK_DIR/$TASK_NAME.plan
 cat landmark.txt > $TASK_DIR/$TASK_NAME.landmark

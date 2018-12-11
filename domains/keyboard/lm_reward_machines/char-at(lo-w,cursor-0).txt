@@ -1,4 +1,4 @@
 0			 # initial state
 (0,1,'w',ConstantRewardFunction(1))
-(0,0,'!w',ConstantRewardFunction(0))
+(0,0,'!a&!b&!c&!d&!e&!f&!g&!h&!i&!j&!k&!l&!m&!n&!o&!p&!q&!r&!s&!t&!u&!v&!w&!x&!y&!z&!C',ConstantRewardFunction(0))
 (1,1,'True',ConstantRewardFunction(0))
