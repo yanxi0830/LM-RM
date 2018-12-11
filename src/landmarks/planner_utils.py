@@ -16,7 +16,7 @@ from subprocess import call
 import matplotlib.pyplot as plt
 from landmarks.action_mappings import action_to_prop, get_all_events
 
-CLEANPLAN = "~/git/LM-RM/scripts/cleanplan.sh"
+CLEANPLAN = "{}/../../scripts/cleanplan.sh".format(os.path.dirname(os.path.abspath(__file__)))
 
 
 def get_partial_ordered_rm(file_params, lm_node, world):
