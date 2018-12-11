@@ -19,9 +19,11 @@ class Task:
 
         # use sequential plans for keyboardworld for now, need full gurobipy license..
         if game_type == 'keyboardworld':
-            self.pop = save_sequential_rm_spec(self.domain_file, self.task_file, self.plan_file, self.rm_file)
+            self.pop = save_sequential_rm_spec(self.domain_file, self.task_file, self.plan_file, self.rm_file,
+                                               self.game_type)
         else:
-            self.pop = compute_and_save_rm_spec(self.domain_file, self.task_file, self.plan_file, self.rm_file)
+            self.pop = compute_and_save_rm_spec(self.domain_file, self.task_file, self.plan_file, self.rm_file,
+                                                self.game_type)
 
     def get_linearized_plan(self):
         return compute_linearized_plans(self.pop)

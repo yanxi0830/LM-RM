@@ -11,6 +11,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     domain_file = args.domain_file
     prob_file = args.prob_file
+    world = args.world + "world"
 
     lm_graph = LandmarkGraph(FileParams(domain_file, prob_file))
-    compute_rm_from_graph2(lm_graph)
+    compute_rm_from_graph2(lm_graph, world)

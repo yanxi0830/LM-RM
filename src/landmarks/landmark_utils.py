@@ -62,7 +62,7 @@ def compute_rm_from_graph(lm_graph, merge_init_nodes=True):
     return reward_machines
 
 
-def compute_rm_from_graph2(lm_graph, merge_init_nodes=True):
+def compute_rm_from_graph2(lm_graph, world, merge_init_nodes=True):
     """
     Method 2
     - Iterate each non-init landmark, compute partial-ordered-plan to reach each landmark
@@ -81,7 +81,7 @@ def compute_rm_from_graph2(lm_graph, merge_init_nodes=True):
             if n.disjunctive:
                 raise NotImplementedError("Disjunctive Facts:", n.facts)
 
-            new_rm = get_partial_ordered_rm(lm_graph.file_params, n)
+            new_rm = get_partial_ordered_rm(lm_graph.file_params, n, world)
 
             reward_machines.add(new_rm)
 
