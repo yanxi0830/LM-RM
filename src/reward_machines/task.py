@@ -17,8 +17,8 @@ class Task:
         # compute and save reward machine file
         self.rm_file = rm_file
 
-        # use sequential plans for keyboardworld for now, need full gurobipy license..
-        if game_type == 'keyboardworld':
+        # use sequential plans for keyboardworld/mouseworld for now, need full gurobipy license..
+        if game_type == 'keyboardworld' or game_type == "mouseworld":
             self.pop = save_sequential_rm_spec(self.domain_file, self.task_file, self.plan_file, self.rm_file,
                                                self.game_type)
         else:
