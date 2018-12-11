@@ -11,7 +11,9 @@ def run_task(world, alg_name, experiment, num_times, new_task, show_print):
     if world == 'craftworld':
         testing_params, learning_params, tester, curriculum = get_params_craft_world(experiment)
     if world == 'keyboardworld':
-        testing_params, learning_params, tester, curriculum = get_params_craft_world(experiment)
+        testing_params, learning_params, tester, curriculum = get_params_keyboard_world(experiment)
+    if world == 'mouseworld':
+        testing_params, learning_params, tester, curriculum = get_params_mouse_world(experiment)
 
     if alg_name == "qrm":
         load_model_and_test_composition(alg_name, tester, curriculum, num_times, new_task, show_print)

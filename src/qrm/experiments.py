@@ -52,6 +52,7 @@ def run_qrm_save_model(alg_name, tester, curriculum, num_times, show_print):
             save_model_path = '../model/' + str(task_aux.params.game_type) + '/' + task_aux.game.get_map_id() + '/' + str(alg_name)
         else:
             save_model_path = '../model/' + str(task_aux.params.game_type) + '/' + str(alg_name)
+
         print("Saving model to {} ...".format(save_model_path))
         saver = tf.train.Saver()
         saver.save(sess, save_model_path)
@@ -90,6 +91,7 @@ def search_policy(prop_order, tester, curriculum, new_task_rm, reward_machines, 
     :return: cost, sequence of policies (RM-id, state_id)
     """
     policy_graph = build_policy_graph(prop_order, reward_machines)
+    print(policy_graph)
     # Follow the graph during execution to calculate the cost
     all_policies = policy_graph.flatten_all_paths([])
     min_costs = np.full(len(all_policies), np.inf)
@@ -181,6 +183,7 @@ def load_model_and_test_composition(alg_name, tester, curriculum, num_times, new
         # partial-ordered RM of new task
         new_task_rm = RewardMachine(new_task.rm_file)
         linearized_plans = new_task.get_linearized_plan()
+        print(linearized_plans)
         least_cost = float('inf')
         best_policy = []  # list of (rm_id, state_id) corresponding to each action
 

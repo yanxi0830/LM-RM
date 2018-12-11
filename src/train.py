@@ -137,7 +137,7 @@ def get_params_mouse_world(experiment):
     testing_params = TestingParameters()
     testing_params.test = True
     testing_params.test_freq = 10 * step_unit
-    testing_params.num_steps = 600  # I'm giving one minute to the agent to solve the task
+    testing_params.num_steps = 1000  # I'm giving one minute to the agent to solve the task
 
     # configuration of learning params
     learning_params = LearningParameters()
@@ -148,7 +148,7 @@ def get_params_mouse_world(experiment):
     learning_params.print_freq = step_unit
     learning_params.train_freq = 1
     learning_params.batch_size = 32
-    learning_params.target_network_update_freq = 100  # obs: 500 makes learning more stable, but slower
+    learning_params.target_network_update_freq = 500  # obs: 500 makes learning more stable, but slower
     learning_params.learning_starts = 1000
 
     # Tabular case
