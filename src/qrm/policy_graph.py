@@ -3,16 +3,17 @@ import copy
 
 
 class PolicyGraph:
-    def __init__(self, policy, props, children, parent_state=None, current_state=None):
+    def __init__(self, policy, props, children, parent_state=None, current_state=None, new_task_state=None, action_order=[]):
         self.policy = policy
         self.props = props  # paths of props from root to current node
         self.children = children
         self.cost = 0  # cost from root to this node
 
+        self.action_order = action_order
         # game states
         self.parent_state = copy.deepcopy(parent_state)
         self.current_state = copy.deepcopy(current_state)
-
+        self.new_task_state = new_task_state
         self.parent = None
 
     def set_parent(self, node):
@@ -26,7 +27,8 @@ class PolicyGraph:
         :param new_prop: we want to take this action with the policy
         :return: child PolicyGraph
         """
-        child = PolicyGraph(policy, self.props + [new_prop], dict(), parent_state=self.current_state)
+        child = PolicyGraph(policy, self.props + [new_prop], dict(),
+                            parent_state=self.current_state, action_order=self.action_order)
         child.set_parent(self)
         self.children[policy] = child
         return child
@@ -74,8 +76,12 @@ class PolicyGraph:
     def update_cost(self, cost):
         self.cost = cost + self.parent.cost
 
-    def save_game_state(self, state):
+    def save_game_state(self, state, new_task_state):
         self.current_state = copy.deepcopy(state)
+        self.new_task_state = new_task_state
+
+    def update_action_orders(self, action_order):
+        self.action_order = action_order
 
     def __str__(self, level=0):
         ret = "\t" * level + repr(self.props) + "\n"

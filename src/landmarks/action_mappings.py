@@ -68,8 +68,14 @@ def craft_world_action_to_prop(action):
 
     if 'wood' in action:
         return 'a'
+    if 'grass' in action:
+        return 'd'
     if 'plank' in action:
         return 'b'
+    if 'iron' in action:
+        return 'f'
+    if 'stick' in action:
+        return 'c'
 
     raise NotImplementedError(action + " is not supported")
 

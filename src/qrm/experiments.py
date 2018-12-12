@@ -70,13 +70,11 @@ def dfs_search_policy(prop_order, tester, curriculum, new_task_rm, reward_machin
     """
     game = Game(tester.get_task_params(curriculum.get_current_task()))
 
-    root = PolicyGraph(tuple(), [], dict(), current_state=game)
+    root = PolicyGraph(tuple(), [], dict(), current_state=game, new_task_state=new_task_rm.get_initial_state())
     open_list = [root]
     action_idx = 0
     least_cost = bound
     least_cost_path = []
-
-    new_task_u1 = new_task_rm.get_initial_state()
 
     action_order = list(prop_order)
 
@@ -91,28 +89,28 @@ def dfs_search_policy(prop_order, tester, curriculum, new_task_rm, reward_machin
             continue
 
         # don't expand
-        if curr_node.cost > least_cost:
+        if curr_node.cost == np.inf or curr_node.cost > least_cost:
             continue
 
         # execute the current policy to complete action
         cost, game_state, new_task_u2, r, bonus_events = execute_policy_and_get_cost(curr_node, reward_machines,
                                                                                      policy_bank, tester, new_task_rm,
-                                                                                     new_task_u1, least_cost)
-
+                                                                                     curr_node.parent.new_task_state, least_cost)
         for b in bonus_events:
             if b in action_order:
                 action_order.remove(b)
 
         # cost to execute action from parent state
-        curr_node.save_game_state(game_state)
+        curr_node.save_game_state(game_state, new_task_u2)
         curr_node.update_cost(cost)
+
+        if cost == np.inf or curr_node.cost > least_cost:
+            continue
 
         if new_task_rm.is_terminal_state(new_task_u2) and r > 0:
             if curr_node.cost < least_cost:
                 least_cost = curr_node.cost
                 least_cost_path = curr_node.get_policy_sequence()
-
-        new_task_u1 = new_task_u2
 
         if action_idx < len(action_order):
             p = action_order[action_idx]  # next level
@@ -125,7 +123,7 @@ def dfs_search_policy(prop_order, tester, curriculum, new_task_rm, reward_machin
 def execute_policy_and_get_cost(curr_node, reward_machines, policy_bank, tester, new_task_rm, new_task_u1,
                                 bound=np.inf):
     """
-    TODO: Explore on the environment under current policy to complete curr_action to get actual cost
+    Explore on the environment under current policy to complete curr_action to get actual cost
     :param curr_policy: PolicyGraph node
     :param curr_action:
     :param reward_machines:
@@ -162,7 +160,7 @@ def execute_policy_and_get_cost(curr_node, reward_machines, policy_bank, tester,
                 bonus.append(game.get_true_propositions())
         else:
             logger.info("OOPS, WRONG WAY, PRUNE THIS OPTION")
-            return np.inf, game, new_task_u2, r, bonus
+            return np.inf, game, new_task_u1, r, bonus
 
         if game.is_env_game_over() or t + 1 >= bound:
             return np.inf, game, new_task_u2, r, bonus
@@ -170,7 +168,6 @@ def execute_policy_and_get_cost(curr_node, reward_machines, policy_bank, tester,
         s1, s1_features = s2, s2_features
         new_task_u1 = new_task_u2
 
-    print("WHY ARE WE HERE??")
     return np.inf, game, new_task_u1, 0, bonus
 
 
