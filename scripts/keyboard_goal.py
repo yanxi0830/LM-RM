@@ -76,4 +76,4 @@ def format_problem(text):
 if __name__ == "__main__":
     pddl = format_problem(args.text)
     # write_file('../domains/keyboard/t1.pddl', pddl)
-    write_file('../domains/keyboard/new_goal.pddl', pddl)
+    write_file('../domains/keyboard/new.pddl', pddl)

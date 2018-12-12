@@ -144,7 +144,7 @@ class MouseWorld:
             curr_x += k_radius * 3
 
     def _load_map(self):
-        actions = [Actions.up.value, Actions.left.value, Actions.right.value, Actions.down.value, Actions.jump.value]
+        actions = [Actions.up.value, Actions.left.value, Actions.right.value, Actions.down.value, Actions.jump.value, Actions.none.value]
 
         max_x = self.params.max_x
         max_y = self.params.max_y
