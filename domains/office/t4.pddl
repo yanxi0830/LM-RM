@@ -7,6 +7,8 @@
 	(:init
 	)
 	(:goal (and
+	(delivered-mail)
+    (delivered-coffee)
     (visited-A)
     (visited-B)
     (visited-C)

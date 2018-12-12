@@ -3,7 +3,7 @@ from argparser import *
 from qrm.experiments import load_model_and_test_composition
 from train import *
 from reward_machines.task import Task
-
+import time
 
 def run_task(world, alg_name, experiment, num_times, new_task, show_print):
     if world == 'officeworld':
@@ -54,4 +54,6 @@ if __name__ == "__main__":
           "domain_file: {}, prob_file: {}, plan_file: {}".format(world, alg_name, experiment, str(num_times),
                                                                  domain_file, prob_file, plan_file))
 
+    init_t = time.time()
     run_task(world, alg_name, experiment, num_times, new_task, show_print)
+    print("Time: ", time.time() - init_t, "s")

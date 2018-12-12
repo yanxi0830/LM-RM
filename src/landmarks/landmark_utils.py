@@ -81,7 +81,10 @@ def compute_rm_from_graph2(lm_graph, world, merge_init_nodes=True):
             if n.disjunctive:
                 raise NotImplementedError("Disjunctive Facts:", n.facts)
 
-            new_rm = get_partial_ordered_rm(lm_graph.file_params, n, world)
+            strict = False
+            if world == "mouseworld" or world == "keyboardworld":
+                strict = True
+            new_rm = get_partial_ordered_rm(lm_graph.file_params, n, world, strict=strict)
 
             reward_machines.add(new_rm)
 

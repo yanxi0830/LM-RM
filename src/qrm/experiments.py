@@ -68,27 +68,62 @@ def dfs_search_policy(prop_order, tester, curriculum, new_task_rm, reward_machin
     :param prop_order: sequence of high-level actions
     :return: cost, sequence of policies (RM-id, state_id)
     """
-    root = PolicyGraph([], dict())
+    game = Game(tester.get_task_params(curriculum.get_current_task()))
+
+    root = PolicyGraph(tuple(), [], dict(), current_state=game)
     open_list = [root]
     action_idx = 0
-    least_cost = np.inf
+    least_cost = bound
     least_cost_path = []
-    current_path = []
 
-    while len(open_list) != 0 and action_idx < len(prop_order):
+    new_task_u1 = new_task_rm.get_initial_state()
+
+    action_order = list(prop_order)
+
+    while len(open_list) != 0 and action_idx < len(action_order):
         curr_node = open_list.pop()
+        action_idx = len(curr_node.props)
 
-        p = prop_order[action_idx]
-        next_level_children = root.expand_children(reward_machines, p)
-        open_list.append(next_level_children)
-
-        if len(curr_node.props) == 0:
+        if len(curr_node.props) == 0:  # cost for root is 0
+            p = action_order[action_idx]  # next level
+            next_level_children = curr_node.expand_children(reward_machines, p)
+            open_list.extend(next_level_children)
             continue
+
+        # don't expand
+        if curr_node.cost > least_cost:
+            continue
+
+        # execute the current policy to complete action
+        cost, game_state, new_task_u2, r, bonus_events = execute_policy_and_get_cost(curr_node, reward_machines,
+                                                                                     policy_bank, tester, new_task_rm,
+                                                                                     new_task_u1, least_cost)
+
+        for b in bonus_events:
+            if b in action_order:
+                action_order.remove(b)
+
+        # cost to execute action from parent state
+        curr_node.save_game_state(game_state)
+        curr_node.update_cost(cost)
+
+        if new_task_rm.is_terminal_state(new_task_u2) and r > 0:
+            if curr_node.cost < least_cost:
+                least_cost = curr_node.cost
+                least_cost_path = curr_node.get_policy_sequence()
+
+        new_task_u1 = new_task_u2
+
+        if action_idx < len(action_order):
+            p = action_order[action_idx]  # next level
+            next_level_children = curr_node.expand_children(reward_machines, p)
+            open_list.extend(next_level_children)
 
     return least_cost, least_cost_path
 
 
-def execute_policy_and_get_cost(curr_policy, curr_action, reward_machines, policy_bank, bound=np.inf):
+def execute_policy_and_get_cost(curr_node, reward_machines, policy_bank, tester, new_task_rm, new_task_u1,
+                                bound=np.inf):
     """
     TODO: Explore on the environment under current policy to complete curr_action to get actual cost
     :param curr_policy: PolicyGraph node
@@ -96,9 +131,47 @@ def execute_policy_and_get_cost(curr_policy, curr_action, reward_machines, polic
     :param reward_machines:
     :param policy_bank:
     :param bound:
-    :return:
+    :return: cost, game_state, new_task_state
     """
-    return 0
+    game = copy.deepcopy(curr_node.parent_state)
+    num_features = len(game.get_features())
+    s1, s1_features = game.get_state_and_features()
+    curr_policy = curr_node.policy
+    curr_policy_rm = reward_machines[curr_policy[0]]
+
+    bonus = []
+    for t in range(tester.testing_params.num_steps):
+        a = policy_bank.get_best_action(curr_policy[0], curr_policy[1],
+                                        s1_features.reshape((1, num_features)), add_noise=False)
+        game.execute_action(a)
+        # game.render()
+        s2, s2_features = game.get_state_and_features()
+        curr_policy_u2 = curr_policy_rm.get_next_state(curr_policy[1], game.get_true_propositions())
+        new_task_u2 = new_task_rm.get_next_state(new_task_u1, game.get_true_propositions())
+
+        desired_next_state = curr_policy_rm.get_next_state(curr_policy[1], curr_policy[2])
+
+        r = new_task_rm.get_reward(new_task_u1, new_task_u2, s1, a, s2)
+        if curr_policy_u2 == desired_next_state:
+            logger.info("EXECUTED ACTION {}, CAN GO TO NEXT LEVEL".format(curr_policy[2]))
+            return t + 1, game, new_task_u2, r, bonus
+        elif curr_policy_u2 == curr_policy[1]:
+            logger.info("STILL FOLLOWING CURRENT POLICY {}, CONTINUE".format(curr_policy[2]))
+            if new_task_u2 != new_task_u1:
+                logger.info("ENCOUNTERED EVENT {} WHILE FOLLOWING {}".format(game.get_true_propositions(), curr_policy[2]))
+                bonus.append(game.get_true_propositions())
+        else:
+            logger.info("OOPS, WRONG WAY, PRUNE THIS OPTION")
+            return np.inf, game, new_task_u2, r, bonus
+
+        if game.is_env_game_over() or t + 1 >= bound:
+            return np.inf, game, new_task_u2, r, bonus
+
+        s1, s1_features = s2, s2_features
+        new_task_u1 = new_task_u2
+
+    print("WHY ARE WE HERE??")
+    return np.inf, game, new_task_u1, 0, bonus
 
 
 def load_model_and_test_composition(alg_name, tester, curriculum, num_times, new_task, show_print):
@@ -132,17 +205,18 @@ def load_model_and_test_composition(alg_name, tester, curriculum, num_times, new
         # partial-ordered RM of new task
         new_task_rm = RewardMachine(new_task.rm_file)
         linearized_plans = new_task.get_linearized_plan()
-        print(linearized_plans)
+        print("There are {} possible linearized plans: {}".format(len(linearized_plans), linearized_plans))
         least_cost = float('inf')
         best_policy = []  # list of (rm_id, state_id) corresponding to each action
 
         for i, curr_plan in enumerate(linearized_plans):
             # Get the least cost path for the current linearized plan
-            cost, switching_seq = search_policy(curr_plan, tester, curriculum, new_task_rm, reward_machines,
-                                                policy_bank, bound=least_cost)
-            if cost < tester.testing_params.num_steps:
-                print(cost, switching_seq)
+            # cost, switching_seq = search_policy(curr_plan, tester, curriculum, new_task_rm, reward_machines,
+            #                                     policy_bank, bound=least_cost)
+            cost, switching_seq = dfs_search_policy(curr_plan, tester, curriculum, new_task_rm, reward_machines,
+                                                    policy_bank, bound=least_cost)
             if cost < least_cost:
+                print(cost, switching_seq)
                 least_cost = cost
                 best_policy = switching_seq
 
@@ -182,6 +256,7 @@ def load_model_and_test_composition(alg_name, tester, curriculum, num_times, new
         task.render()
         print("Rewards:", r_total)
 
+
 ###################################################################################################################
 #
 # Quick testing functions, need cleanup
@@ -197,7 +272,7 @@ def build_policy_graph(prop_order, reward_machines):
     :param reward_machines:
     :return: PolicyGraph
     """
-    root = PolicyGraph([], dict())
+    root = PolicyGraph(tuple(), [], dict())
     children = [root]
     for p in prop_order:
         next_level_children = []
@@ -255,13 +330,17 @@ def search_policy(prop_order, tester, curriculum, new_task_rm, reward_machines, 
             if task.is_env_game_over() or t + 1 >= np.min(min_costs) or t + 1 >= bound:
                 break
 
-            if new_task_rm.is_terminal_state(new_task_u2):
+            r = new_task_rm.get_reward(new_task_u1, new_task_u2, s1, a, s2)
+            if new_task_rm.is_terminal_state(new_task_u2) and r > 0:
                 print("NEW COMPOSED TASK FINISHED WITH {}".format(all_policies[j]))
                 print("STEPS:", t + 1)
                 min_costs[j] = t + 1
                 min_idx = np.argmin(min_costs)
-                # TEMPORARY WORKAROUND FOR keyboardworld, stop searching since policies are the same..
+                # TEMPORARY WORKAROUND FOR keyboardworld, stop searching since policies are the same
                 # return min_costs[min_idx], all_policies[min_idx]
+                break
+            elif new_task_rm.is_terminal_state(new_task_u2) and r == 0:
+                # dead-end
                 break
             else:
                 s1, s1_features = s2, s2_features

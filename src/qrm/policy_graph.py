@@ -1,15 +1,22 @@
 import numpy as np
+import copy
 
 
 class PolicyGraph:
-    def __init__(self, props, children, parent_state=None):
-        self.props = props      # paths of props from root to current node
+    def __init__(self, policy, props, children, parent_state=None, current_state=None):
+        self.policy = policy
+        self.props = props  # paths of props from root to current node
         self.children = children
-        self.cost = np.inf
+        self.cost = 0  # cost from root to this node
 
         # game states
-        self.parent_state = parent_state
-        self.current_state = None
+        self.parent_state = copy.deepcopy(parent_state)
+        self.current_state = copy.deepcopy(current_state)
+
+        self.parent = None
+
+    def set_parent(self, node):
+        self.parent = node
 
     def add_child(self, policy, new_prop):
         """
@@ -19,7 +26,8 @@ class PolicyGraph:
         :param new_prop: we want to take this action with the policy
         :return: child PolicyGraph
         """
-        child = PolicyGraph(self.props + [new_prop], dict(), self.current_state)
+        child = PolicyGraph(policy, self.props + [new_prop], dict(), parent_state=self.current_state)
+        child.set_parent(self)
         self.children[policy] = child
         return child
 
@@ -52,8 +60,22 @@ class PolicyGraph:
                 self.children[c].flatten_all_paths(paths, list(current_path + [c]))
         return paths
 
+    def get_policy_sequence(self):
+        ret = []
+        ret.append(self.policy)
+        parent = self.parent
+        while parent is not None and parent.parent is not None:
+            ret.append(parent.policy)
+            parent = parent.parent
+
+        ret.reverse()
+        return ret
+
     def update_cost(self, cost):
-        self.cost = cost
+        self.cost = cost + self.parent.cost
+
+    def save_game_state(self, state):
+        self.current_state = copy.deepcopy(state)
 
     def __str__(self, level=0):
         ret = "\t" * level + repr(self.props) + "\n"

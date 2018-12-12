@@ -231,7 +231,7 @@ def play():
     os.chdir("../")
     tester = Tester(LearningParameters(), TestingParameters(), "../experiments/mouse/tests/mouse_0.txt")
 
-    task = tester.get_task_rms()[0]
+    task = tester.get_task_rms()[1]
     params = tester.get_task_params(task).game_params
     max_x = params.max_x
     max_y = params.max_y

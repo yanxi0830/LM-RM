@@ -137,11 +137,11 @@ def get_params_mouse_world(experiment):
     testing_params = TestingParameters()
     testing_params.test = True
     testing_params.test_freq = 10 * step_unit
-    testing_params.num_steps = 1000  # I'm giving one minute to the agent to solve the task
+    testing_params.num_steps = 2000  # I'm giving one minute to the agent to solve the task
 
     # configuration of learning params
     learning_params = LearningParameters()
-    learning_params.lr = 1e-5  # 5e-5 seems to be better than 1e-4
+    learning_params.lr = 1e-4  # 5e-5 seems to be better than 1e-4
     learning_params.gamma = 0.9
     learning_params.max_timesteps_per_task = testing_params.num_steps
     learning_params.buffer_size = 50000
@@ -165,7 +165,7 @@ def get_params_mouse_world(experiment):
     # Setting the curriculum learner
     curriculum = CurriculumLearner(tester.get_task_rms())
     curriculum.num_steps = 300
-    curriculum.total_steps = 2000 * step_unit
+    curriculum.total_steps = 3000 * step_unit
     curriculum.min_steps = 1
 
     print("Mouse World ----------")

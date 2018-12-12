@@ -26,4 +26,4 @@ class Task:
                                                 self.game_type)
 
     def get_linearized_plan(self):
-        return compute_linearized_plans(self.pop)
+        return compute_linearized_plans(self.pop, self.game_type)

@@ -19,7 +19,7 @@ from landmarks.action_mappings import action_to_prop, get_all_events
 CLEANPLAN = "{}/../../scripts/cleanplan.sh".format(os.path.dirname(os.path.abspath(__file__)))
 
 
-def get_partial_ordered_rm(file_params, lm_node, world):
+def get_partial_ordered_rm(file_params, lm_node, world, strict=False):
     lm_prob_file = construct_problem_file(file_params, lm_node)
     # execute cleanplan.sh to get sequential plan
     # PyCharm bug, running this in PyCharm gives UTF CodecError...run with command line or do some pre-processing
@@ -32,7 +32,7 @@ def get_partial_ordered_rm(file_params, lm_node, world):
     # nx.draw_networkx(rm_net, pos=nx.shell_layout(rm_net), with_labels=False)
     # nx.draw_networkx_edge_labels(rm_net, pos=nx.shell_layout(rm_net))
     # plt.show()
-    rm = rm_net_to_reward_machine(rm_net, world)
+    rm = rm_net_to_reward_machine(rm_net, world, strict=strict)
     spec = rm.get_txt_representation()
     lm_rm_file = os.path.dirname(file_params.domain_file) + "/lm_reward_machines/" + str(
         lm_node.facts_as_filename()) + ".txt"
@@ -87,14 +87,14 @@ def compute_pop(domain_file, prob_file, plan_file):
     return pop_good
 
 
-def compute_linearized_plans(pop):
+def compute_linearized_plans(pop, world):
     plans = linearize(pop)
     # map action to propositions
     plan_props = set()
     for linear_plan in plans:
         # remove init/goal
         plan_actions = linear_plan[1:-1]
-        plan_props.add(tuple(map(lambda x: action_to_prop(str(x)), plan_actions)))
+        plan_props.add(tuple(map(lambda x: action_to_prop(str(x), world), plan_actions)))
     return plan_props
 
 
@@ -118,7 +118,7 @@ def pop_to_rm_network(pop):
     return network
 
 
-def rm_net_to_reward_machine(rm_net, world):
+def rm_net_to_reward_machine(rm_net, world, strict=False):
     rm = RewardMachine()
     node2id = dict()
     for i, node in enumerate(rm_net.nodes()):
@@ -130,14 +130,15 @@ def rm_net_to_reward_machine(rm_net, world):
         if len(list(rm_net.predecessors(node))) == 0:
             rm.set_initial_state(node2id[node])
 
-        selfloop = ['!{}'.format(e) for e in get_all_events(world)]
+        selfloop = ['!{}'.format(e) for e in get_all_events(world)] if strict else []
         for child in rm_net.successors(node):
             action = rm_net.get_edge_data(node, child)['attr']
             event_prop = action_to_prop(str(action), world)
             if event_prop in selfloop:
                 selfloop.pop(selfloop.index(event_prop))
-            # else:
-            #     selfloop.append('!' + str(event_prop))
+            else:
+                if not strict:
+                    selfloop.append('!' + str(event_prop))
             reward = 0
             if len(list(rm_net.successors(child))) == 0:
                 # child is terminal, get reward 1
@@ -154,7 +155,7 @@ def rm_net_to_reward_machine(rm_net, world):
     return rm
 
 
-def compute_and_save_rm_spec(domain_file, prob_file, plan_file, rm_file_dest, world, render=False):
+def compute_and_save_rm_spec(domain_file, prob_file, plan_file, rm_file_dest, world, strict=False, render=False):
     pop = compute_pop(domain_file, prob_file, plan_file)
     task_rm_net = pop_to_rm_network(pop)
     if render:
@@ -162,7 +163,7 @@ def compute_and_save_rm_spec(domain_file, prob_file, plan_file, rm_file_dest, wo
         nx.draw_networkx_edge_labels(task_rm_net, pos=nx.shell_layout(task_rm_net))
         plt.show()
 
-    task_rm = rm_net_to_reward_machine(task_rm_net, world)
+    task_rm = rm_net_to_reward_machine(task_rm_net, world, strict=strict)
     spec = task_rm.get_txt_representation()
 
     write_file(rm_file_dest, spec)
@@ -170,7 +171,7 @@ def compute_and_save_rm_spec(domain_file, prob_file, plan_file, rm_file_dest, wo
     return pop
 
 
-def save_sequential_rm_spec(domain_file, prob_file, plan_file, rm_file_dest, world, render=False):
+def save_sequential_rm_spec(domain_file, prob_file, plan_file, rm_file_dest, world, strict=False, render=False):
     plan = parse_output_ipc(plan_file)
     seq_pop = lift_POP(domain_file, prob_file, plan, True)
 
@@ -181,7 +182,7 @@ def save_sequential_rm_spec(domain_file, prob_file, plan_file, rm_file_dest, wor
         nx.draw_networkx_edge_labels(task_rm_net, pos=nx.shell_layout(task_rm_net))
         plt.show()
 
-    task_rm = rm_net_to_reward_machine(task_rm_net, world)
+    task_rm = rm_net_to_reward_machine(task_rm_net, world, strict=strict)
     spec = task_rm.get_txt_representation()
 
     write_file(rm_file_dest, spec)
