@@ -155,7 +155,7 @@ class MouseWorld:
         # Adding the agent
         # pos_a = [2 * radius + random.random() * (max_x - 2 * radius),
         #          2 * radius + random.random() * (max_y - 2 * radius)]
-        pos_a = [2 * radius, 2 * radius]
+        pos_a = [max_x / 2.0, max_y / 2.0]
         self.agent = MouseAgent(radius, pos_a, [0.0, 0.0], actions, vel_delta, vel_max)
 
         # Adding static keyboard keys
