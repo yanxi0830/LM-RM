@@ -1,18 +1,44 @@
-# The craft environment
+# CraftWorld
 
-The 'map' folder contains 11 randomly generated maps. Each grid position might contain a resource, workstation, wall, or being empty. A brief explanation of each symbol follows:
+### Crafting Rules
+- The agent can get raw materials: `wood`, `grass`, `iron`
+- The agent can go to the `toolshed` with stored raw materials to craft new objects:
+    - make `plank` from `wood`
+    - make `rope` from `grass`
+    - make `axe` from `stick` + `iron`
+- The agent can go to the `workbench` with stored raw materials to craft new objects:
+    - make `stick` from `wood`
+    - make `bed` from `plank` + `grass`
+    - make `shears` from `stick` + `iron`
+- The agent can go to the `factory` with stored raw materials to craft new objects:
+    - make `cloth` from `grass`
+    - make `bridge` from `iron` + `wood`
+- The agent can only get `gold` after it has crafted a `bridge`
+- The agent can only get `gem` after it has crafted an `axe`
 
-- 'A' is the agent
-- 'X' is a wall
-- 'a' is a tree
-- 'b' is a toolshed
-- 'c' is a workbench
-- 'd' is grass
-- 'e' is a factory
-- 'f' is iron
-- 'g' is gold
-- 'h' is gem
+### Event Detectors
+- 'a' is emitted when agent goes to get wood
+- 'b' is emitted when agent goes to the toolshed
+- 'c' is emitted when agent goes to the workbench
+- 'd' is emitted when agent goes to get grass
+- 'e' is emitted when agent goes to the factory
+- 'f' is emitted when agent goes to get iron
+- 'g' is emitted when agent goes to get gold
+- 'h' is emitted when agent goes to get gem
 
-The 'reward_machines' folder contains 10 tasks for this environment. These tasks are based on the 10 tasks defined by [Andreas et al.](https://arxiv.org/abs/1611.01796) for the crafting environment. The 'tests' folder contains 11 testing scenarios. Each test is associated with one map and includes the path to the 10 tasks defined for the craft environment. It also includes the optimal number of steps needed to solve each task in the given map (we precomputed them using value iteration). We use the optimal number of steps to normalize the discounted rewards in our experiments.
+### Landmarks
+The 'reward_machines' folder contains RM to reach landmarks
 
-The 'options' folder is only used by the Hierarchical RL baselines. It defines a set of sensible options to tackle the tasks defined for this domain.
+- have-axe
+- have-bed
+- have-bridge
+- have-cloth
+- have-gem
+- have-gold
+- have-grass
+- have-iron
+- have-plank
+- have-rope
+- have-shears
+- have-stick
+- have-wood

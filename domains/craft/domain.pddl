@@ -4,43 +4,20 @@
     :strips :adl
   )
 
-  (:predicates
-    (have-wood)
-    (have-grass)
-    (have-iron)
-    (have-plank)
-    (have-stick)
-    (have-cloth)
-    (have-rope)
-    (have-bridge)
-    (have-bed)
-    (have-axe)
-    (have-shears)
-    (have-gold)
-    (have-gem)
+  (:types
+    wood grass iron - raw-material
+    raw-material plank stick cloth rope bridge bed axe shears gold gem - object
   )
 
-  (:action get-wood
-    :parameters ()
-    :precondition ()
-    :effect (and
-              (have-wood)
-              )
-    )
+  (:predicates
+    (have ?o - object)
+  )
 
-  (:action get-grass
-    :parameters ()
+  (:action get
+    :parameters (?m - raw-material)
     :precondition ()
     :effect (and
-              (have-grass)
-              )
-    )
-
-  (:action get-iron
-    :parameters ()
-    :precondition ()
-    :effect (and
-              (have-iron)
+              (have ?m)
               )
     )
 
@@ -49,24 +26,24 @@
   ; stick + iron + toolshed = axe
   ; TOOLSHED
   (:action make-plank
-    :parameters ()
-    :precondition (and (have-wood))
-    :effect (and (not (have-wood)) (have-plank))
+    :parameters (?w - wood ?p - plank)
+    :precondition (and (have ?w))
+    :effect (and (not (have ?w)) (have ?p))
     )
 
   (:action make-rope
-    :parameters ()
-    :precondition (and (have-grass))
-    :effect (and (not (have-grass)) (have-rope))
+    :parameters (?g - grass ?r - rope)
+    :precondition (and (have ?g))
+    :effect (and (not (have ?g)) (have ?r))
     )
 
   (:action make-axe
-    :parameters ()
-    :precondition (and (have-stick) (have-iron))
+    :parameters (?s - stick ?i - iron ?a - axe)
+    :precondition (and (have ?s) (have ?i))
     :effect (and
-              (not (have-stick))
-              (not (have-iron))
-              (have-axe))
+              (not (have ?s))
+              (not (have ?i))
+              (have ?a))
     )
 
   ; wood + workbench = stick
@@ -74,59 +51,60 @@
   ; stick + iron + workbench = shears
   ; WORKBENCH
   (:action make-stick
-    :parameters ()
-    :precondition (and (have-wood))
-    :effect (and (not (have-wood)) (have-stick))
+    :parameters (?w - wood ?s - stick)
+    :precondition (and (have ?w))
+    :effect (and (not (have ?w)) (have ?s))
     )
 
   (:action make-bed
-    :parameters ()
-    :precondition (and (have-plank) (have-grass))
+    :parameters (?p - plank ?g - grass ?b - bed)
+    :precondition (and (have ?p) (have ?g))
     :effect (and
-              (not (have-plank))
-              (not (have-grass))
-              (have-bed))
+              (not (have ?p))
+              (not (have ?g))
+              (have ?b))
     )
 
   (:action make-shears
-    :parameters ()
-    :precondition (and (have-stick) (have-iron))
+    :parameters (?s - stick ?i - iron)
+    :precondition (and (have ?s) (have ?i))
     :effect (and
-              (not (have-stick))
-              (not (have-iron))
-              (have-shears))
+              (not (have ?s))
+              (not (have ?i))
+              (have ?s))
     )
 
   ; grass + factory = cloth
   ; iron + wood + factory = bridge
   ; FACTORY
   (:action make-cloth
-    :parameters ()
-    :precondition (and (have-grass))
+    :parameters (?g - grass ?c - cloth)
+    :precondition (and (have ?g))
     :effect (and
-              (not (have-grass))
-              (have-cloth))
+              (not (have ?g))
+              (have ?c))
     )
 
   (:action make-bridge
-    :parameters ()
-    :precondition (and (have-iron) (have-wood))
-    :effect (and              (not (have-iron))
-              (not (have-wood))
-              (have-bridge))
+    :parameters (?i - iron ?w - wood ?b - bridge)
+    :precondition (and (have ?i) (have ?w))
+    :effect (and
+              (not (have ?i))
+              (not (have ?w))
+              (have ?b))
     )
 
   ; have the bridge can get the gold
   (:action get-gold
-    :parameters ()
-    :precondition (and (have-bridge))
-    :effect (and (have-gold))
+    :parameters (?b - bridge ?g - gold)
+    :precondition (and (have ?b))
+    :effect (and (have ?g))
     )
 
   ; have axe can get the gem
   (:action get-gem
-    :parameters ()
-    :precondition (and (have-axe))
-    :effect (and (have-gem))
+    :parameters (?g - gem ?a - axe)
+    :precondition (and (have ?a))
+    :effect (and (have ?g))
     )
 )

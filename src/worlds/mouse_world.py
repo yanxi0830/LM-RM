@@ -12,11 +12,11 @@ class Colors(Enum):
 
 
 class MouseWorldParams:
-    def __init__(self, max_x=850, max_y=300, m_velocity=20, m_radius=10, k_radius=25):
+    def __init__(self, max_x=800, max_y=250, m_velocity=30, m_radius=5, k_radius=30):
         self.max_x = max_x
         self.max_y = max_y
         self.m_velocity_delta = m_velocity
-        self.m_velocity_max = 3 * m_velocity
+        self.m_velocity_max = 2 * m_velocity
         self.m_radius = m_radius
         self.k_radius = k_radius
 
@@ -118,6 +118,7 @@ class MouseWorld:
         keys_r2 = "Casdfghjkl"
         keys_r3 = "zxcvbnm"
         k_radius = self.params.k_radius
+        m_radius = self.params.m_radius
         # same row = same y, diff x
         curr_x = k_radius * 4
         curr_y = k_radius * 2
@@ -125,23 +126,23 @@ class MouseWorld:
             new_key_pos = [curr_x, curr_y]
             new_key = KeyboardKey(k_radius, ch, new_key_pos)
             self.keyboard_keys.append(new_key)
-            curr_x += k_radius * 3
+            curr_x += k_radius * 2 + m_radius * 2
 
         curr_x = k_radius * 2
-        curr_y += k_radius * 3
+        curr_y += k_radius * 2 + m_radius * 2
         for ch in keys_r2:
             new_key_pos = [curr_x, curr_y]
             new_key = KeyboardKey(k_radius, ch, new_key_pos)
             self.keyboard_keys.append(new_key)
-            curr_x += k_radius * 3
+            curr_x += k_radius * 2 + m_radius * 2
 
         curr_x = k_radius * 8
-        curr_y += k_radius * 3
+        curr_y += k_radius * 2 + m_radius * 2
         for ch in keys_r3:
             new_key_pos = [curr_x, curr_y]
             new_key = KeyboardKey(k_radius, ch, new_key_pos)
             self.keyboard_keys.append(new_key)
-            curr_x += k_radius * 3
+            curr_x += k_radius * 2 + m_radius * 2
 
     def _load_map(self):
         actions = [Actions.up.value, Actions.left.value, Actions.right.value, Actions.down.value, Actions.jump.value, Actions.none.value]
@@ -214,7 +215,7 @@ class MouseAgent:
 
     def is_on_key(self, key):
         d = np.linalg.norm(self.pos - key.pos, ord=2)
-        return d <= self.radius + key.radius
+        return d < self.radius + key.radius
 
     def draw_on_display(self, gameDisplay):
         x, y = int(self.pos[0]), int(self.pos[1])
