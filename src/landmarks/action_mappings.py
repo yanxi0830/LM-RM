@@ -1,3 +1,5 @@
+from translate.pddl.custom_utils import GroundAction
+
 OFFICE_EVENT2PROP = {
     '(goto-a)': 'a',
     '(goto-b)': 'b',
@@ -16,19 +18,14 @@ KEYBOARD_EVENT2PROP = {
 }
 
 CRAFT_EVENT2PROP = {
-    '(get-wood)': 'a',
-    '(get-grass)': 'd',
-    '(get-iron)': 'f',
-    '(make-plank)': 'b',
-    '(make-rope)': 'b',
-    '(make-axe)': 'b',
-    '(make-bed)': 'c',
-    '(make-stick)': 'c',
-    '(make-shears)': 'c',
-    '(make-cloth)': 'e',
-    '(make-bridge)': 'e',
-    '(get-gold)': 'g',
-    '(get-gem)': 'h'
+    'wood': 'a',
+    'toolshed': 'b',
+    'workbench': 'c',
+    'grass': 'd',
+    'factory': 'e',
+    'iron': 'f',
+    'gold': 'g',
+    'gem': 'h'
 }
 
 KEYBOARD_EVENTS = [e for e in 'abcdefghijklmnopqrstuvwxyzC']
@@ -63,21 +60,28 @@ def keyboard_world_action_to_prop(action):
 
 
 def craft_world_action_to_prop(action):
-    if action in CRAFT_EVENT2PROP:
-        return CRAFT_EVENT2PROP[action]
+    ground_action = GroundAction(action[1:-1])
+    loc = ""
+    if 'wood' in ground_action.operator:
+        loc = 'wood'
+    elif 'iron' in ground_action.operator:
+        loc = 'iron'
+    elif 'grass' in ground_action.operator:
+        loc = 'grass'
+    elif 'plank' in ground_action.operator or 'rope' in ground_action.operator or 'axe' in ground_action.operator:
+        loc = 'toolshed'
+    elif 'stick' in ground_action.operator or 'bed' in ground_action.operator or 'shears' in ground_action.operator:
+        loc = 'workbench'
+    elif 'cloth' in ground_action.operator or 'bridge' in ground_action.operator:
+        loc = 'factory'
+    elif 'gold' in ground_action.operator:
+        loc = 'gold'
+    elif 'gem' in ground_action.operator:
+        loc = 'gem'
+    else:
+        raise NotImplementedError(action + " is not supported")
 
-    if 'wood' in action:
-        return 'a'
-    if 'grass' in action:
-        return 'd'
-    if 'plank' in action:
-        return 'b'
-    if 'iron' in action:
-        return 'f'
-    if 'stick' in action:
-        return 'c'
-
-    raise NotImplementedError(action + " is not supported")
+    return CRAFT_EVENT2PROP[loc]
 
 
 def office_world_action_to_prop(action):

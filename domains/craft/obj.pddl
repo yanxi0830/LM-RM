@@ -1,7 +1,7 @@
 (define (problem t1)
 	(:domain craftworld)
 	(:objects
-	    wood-1 wood-2 - wood
+	    wood-1 - wood
 	    plank-1 plank-2 - plank
 	)
 	(:init
