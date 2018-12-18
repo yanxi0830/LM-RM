@@ -327,6 +327,8 @@ def render_mouseworld_task(alg_name, tester, curriculum, num_times, new_task, sh
 
         gameDisplay.fill(Colors.WHITE.value)
         task.game.agent.draw_on_display(gameDisplay)
+        # for k in task.game.keyboard_keys:
+        #     k.draw_on_display(gameDisplay, letters=False)
         task.game.draw_current_text_on_display(gameDisplay)
         pygame.display.update()
         clock.tick(30)

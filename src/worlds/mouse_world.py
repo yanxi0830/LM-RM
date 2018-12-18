@@ -169,7 +169,7 @@ class KeyboardKey:
         self.keycode = keycode
         self.pos = np.array(pos, dtype=np.float)
 
-    def draw_on_display(self, gameDisplay):
+    def draw_on_display(self, gameDisplay, letters=True):
         x, y = self.pos
         r = self.radius
         pygame.draw.rect(gameDisplay, Colors.BLACK.value, [x-r, y-r, r*2, r*2], 2)
@@ -177,7 +177,8 @@ class KeyboardKey:
         if label == "C":
             label = "caps"
             x -= r - 5
-        gameDisplay.blit(pygame.font.SysFont('Arial', 25).render(label, True, Colors.BLACK.value), (x, y))
+        if letters:
+            gameDisplay.blit(pygame.font.SysFont('Arial', 25).render(label, True, Colors.BLACK.value), (x, y))
 
 
 class MouseAgent:
