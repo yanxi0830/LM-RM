@@ -1,6 +1,6 @@
 import argparse
 from argparser import *
-from qrm.experiments import load_model_and_test_composition
+from qrm.experiments import load_model_and_test_composition, render_mouseworld_task
 from train import *
 from reward_machines.task import Task
 import time
@@ -15,7 +15,9 @@ def run_task(world, alg_name, experiment, num_times, new_task, show_print):
     if world == 'mouseworld':
         testing_params, learning_params, tester, curriculum = get_params_mouse_world(experiment)
 
-    if alg_name == "qrm":
+    if world == 'mouseworld':
+        render_mouseworld_task(alg_name, tester, curriculum, num_times, new_task, show_print)
+    else:
         load_model_and_test_composition(alg_name, tester, curriculum, num_times, new_task, show_print)
 
 
