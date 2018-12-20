@@ -18,6 +18,10 @@
     (have-shears)
     (have-gold)
     (have-gem)
+    (have-goldware)
+    (have-ring)
+    (have-saw)
+    (have-bow)
   )
 
   (:action get-wood
@@ -47,6 +51,7 @@
   ; wood + toolshed = plank
   ; grass + toolshed = rope
   ; stick + iron + toolshed = axe
+  ; rope + stick + toolshed = bow
   ; TOOLSHED
   (:action make-plank
     :parameters ()
@@ -69,15 +74,28 @@
               (have-axe))
     )
 
+  (:action make-bow
+    :parameters ()
+    :precondition (and (have-rope) (have-stick))
+    :effect (and (not (have-rope)) (not (have-stick)) (have-bow))
+  )
+
   ; wood + workbench = stick
   ; plank + grass + workbench = bed
   ; stick + iron + workbench = shears
+  ; iron + workbench = saw
   ; WORKBENCH
   (:action make-stick
     :parameters ()
     :precondition (and (have-wood))
     :effect (and (not (have-wood)) (have-stick))
     )
+
+  (:action make-saw
+    :parameters ()
+    :precondition (and (have-iron))
+    :effect (and (not (have-iron)) (have-saw))
+  )
 
   (:action make-bed
     :parameters ()
@@ -99,6 +117,8 @@
 
   ; grass + factory = cloth
   ; iron + wood + factory = bridge
+  ; gold + factory = goldware
+  ; gem + factory = gem
   ; FACTORY
   (:action make-cloth
     :parameters ()
@@ -115,6 +135,18 @@
               (not (have-wood))
               (have-bridge))
     )
+
+  (:action make-goldware
+    :parameters ()
+    :precondition (and (have-gold))
+    :effect (and (not (have-gold)) (have-goldware))
+  )
+
+  (:action make-ring
+    :parameters ()
+    :precondition (and (have-gem))
+    :effect (and (not (have-gem)) (have-ring))
+  )
 
   ; have the bridge can get the gold
   (:action get-gold

@@ -5,6 +5,8 @@ from tester.tester_params import TestingParameters
 from common.curriculum import CurriculumLearner
 from qrm.learning_params import LearningParameters
 from qrm.experiments import run_qrm_save_model
+from baselines.run_hrl import run_hrl_save_model
+from baselines.run_dqn import run_dqn_save_model
 
 
 def get_params_craft_world(experiment):
@@ -50,7 +52,7 @@ def get_params_craft_world(experiment):
 
 
 def get_params_office_world(experiment):
-    step_unit = 1000
+    step_unit = 500
 
     # configuration of testing params
     testing_params = TestingParameters()
@@ -195,6 +197,13 @@ def train_policy(world, alg_name, experiment, num_times, show_print):
 
     if alg_name == "qrm":
         run_qrm_save_model(alg_name, tester, curriculum, num_times, show_print)
+    if alg_name == "hrl":
+        run_hrl_save_model(alg_name, tester, curriculum, num_times, show_print, use_rm=False)
+    if alg_name == "hrl-rm":
+        run_hrl_save_model(alg_name, tester, curriculum, num_times, show_print, use_rm=True)
+    if alg_name == "dqn":
+        run_dqn_save_model(alg_name, tester, curriculum, num_times, show_print)
+
 
 
 if __name__ == "__main__":

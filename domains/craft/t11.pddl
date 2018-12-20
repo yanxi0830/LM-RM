@@ -5,9 +5,7 @@
 	(:init
 	)
 	(:goal (and
-    (have-plank)
-    (have-bridge)
-    (have-bed)
+    (have-ring)
 		)
 	)
 )

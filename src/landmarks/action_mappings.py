@@ -68,11 +68,11 @@ def craft_world_action_to_prop(action):
         loc = 'iron'
     elif 'grass' in ground_action.operator:
         loc = 'grass'
-    elif 'plank' in ground_action.operator or 'rope' in ground_action.operator or 'axe' in ground_action.operator:
+    elif 'plank' in ground_action.operator or 'rope' in ground_action.operator or 'axe' in ground_action.operator or 'bow' in ground_action.operator:
         loc = 'toolshed'
-    elif 'stick' in ground_action.operator or 'bed' in ground_action.operator or 'shears' in ground_action.operator:
+    elif 'stick' in ground_action.operator or 'bed' in ground_action.operator or 'shears' in ground_action.operator or 'saw' in ground_action.operator:
         loc = 'workbench'
-    elif 'cloth' in ground_action.operator or 'bridge' in ground_action.operator:
+    elif 'cloth' in ground_action.operator or 'bridge' in ground_action.operator or 'goldware' in ground_action.operator or 'ring' in ground_action.operator:
         loc = 'factory'
     elif 'gold' in ground_action.operator:
         loc = 'gold'

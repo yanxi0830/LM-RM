@@ -19,6 +19,7 @@ logger.setLevel(logging.DEBUG)
 
 def run_qrm_save_model(alg_name, tester, curriculum, num_times, show_print):
     learning_params = tester.learning_params
+    json_saver = Saver(alg_name, tester, curriculum)
 
     time_init = time.time()
     for n in range(num_times):
@@ -50,7 +51,7 @@ def run_qrm_save_model(alg_name, tester, curriculum, num_times, show_print):
             run_qrm_task(sess, rm_file, policy_bank, tester, curriculum, replay_buffer, beta_schedule, show_print)
 
         # Save session
-        if task_aux.params.game_type == "craftworld":
+        if task_aux.params.game_type != "officeworld":
             save_model_path = '../model/' + str(
                 task_aux.params.game_type) + '/' + task_aux.game.get_map_id() + '/' + str(alg_name)
         else:
@@ -59,6 +60,12 @@ def run_qrm_save_model(alg_name, tester, curriculum, num_times, show_print):
         print("Saving model to {} ...".format(save_model_path))
         saver = tf.train.Saver()
         saver.save(sess, save_model_path)
+
+        tf.reset_default_graph()
+        sess.close()
+
+        # Backing up the results
+        json_saver.save_results()
 
     print("Time:", "%0.2f" % ((time.time() - time_init) / 60), "mins")
 

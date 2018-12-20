@@ -6,13 +6,17 @@
     - make `plank` from `wood`
     - make `rope` from `grass`
     - make `axe` from `stick` + `iron`
+    - make `bow` from `rope` + `stick`
 - The agent can go to the `workbench` with stored raw materials to craft new objects:
     - make `stick` from `wood`
+    - make `saw` from `iron`
     - make `bed` from `plank` + `grass`
     - make `shears` from `stick` + `iron`
 - The agent can go to the `factory` with stored raw materials to craft new objects:
     - make `cloth` from `grass`
     - make `bridge` from `iron` + `wood`
+    - make `goldware` from `gold`
+    - make `ring` from `gem`
 - The agent can only get `gold` after it has crafted a `bridge`
 - The agent can only get `gem` after it has crafted an `axe`
 

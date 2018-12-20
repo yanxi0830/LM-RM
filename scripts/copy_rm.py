@@ -4,8 +4,8 @@ Copy over all files in /PATH/TO/lm_reward_machines for training...
 import os
 import shutil
 
-SRC_PATH="../domains/keyboard/lm_reward_machines"
-DEST_PATH="../experiments/keyboard/reward_machines"
+SRC_PATH="../domains/craft/lm_reward_machines"
+DEST_PATH="../experiments/craft/reward_machines"
 
 directory = os.fsencode(SRC_PATH)
 
