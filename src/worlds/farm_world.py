@@ -327,6 +327,8 @@ class WaterWorld:
             for _ in range(self.params.b_num_per_color):
                 color = colors[c]
                 pos, vel = self._get_pos_vel_new_ball()
+                if color not in "abc":
+                    vel = 0.0
                 ball = Ball(color, radius, pos, vel)
                 self.balls.append(ball)
 
@@ -478,10 +480,10 @@ def play():
     import os
     os.chdir("../")
 
-    tester = Tester(LearningParameters(), TestingParameters(), "../experiments/water/tests/water_7.txt")
+    tester = Tester(LearningParameters(), TestingParameters(), "../experiments/farm/tests/farm_7.txt")
     if tester is None:
-        task = "../experiments/water/reward_machines/t1.txt"
-        state_file = "../experiments/water/maps/world_0.pkl"
+        task = "../experiments/farm/reward_machines/t1.txt"
+        state_file = "../experiments/farm/maps/world_0.pkl"
         max_x = 400
         max_y = 400
         b_num_per_color = 2
@@ -568,12 +570,14 @@ def play():
 
         # print info related to the task
         if reward > 0: print("REWARD!! ----------------!------------!")
-        if rm.is_terminal_state(u2):
-            print("Machine state:", u2, "(terminal)")
-        else:
-            print("Machine state:", u2)
+        # if rm.is_terminal_state(u2):
+        #     print("Machine state:", u2, "(terminal)")
+        # else:
+        #     print("Machine state:", u2)
 
-        print("Features:", game.get_features())
+        # print("Features:", game.get_features())
+
+        print(events)
 
         t_previous = t_current
         s1, u1 = s2, u2
@@ -581,7 +585,7 @@ def play():
     pygame.quit()
 
 
-def save_random_world(num_worlds, folder_out="../../experiments/water/maps/"):
+def save_random_world(num_worlds, folder_out="../../experiments/farm/maps/"):
     max_x = 400
     max_y = 400
     b_num_per_color = 2

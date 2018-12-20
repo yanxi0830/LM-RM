@@ -67,6 +67,7 @@ def run_qrm_save_model(alg_name, tester, curriculum, num_times, show_print):
         # Backing up the results
         json_saver.save_results()
 
+    tester.show_results()
     print("Time:", "%0.2f" % ((time.time() - time_init) / 60), "mins")
 
 
@@ -104,7 +105,8 @@ def dfs_search_policy(prop_order, tester, curriculum, new_task_rm, reward_machin
         # execute the current policy to complete action
         cost, game_state, new_task_u2, r, bonus_events = execute_policy_and_get_cost(curr_node, reward_machines,
                                                                                      policy_bank, tester, new_task_rm,
-                                                                                     curr_node.parent.new_task_state, least_cost)
+                                                                                     curr_node.parent.new_task_state,
+                                                                                     least_cost)
         for b in bonus_events:
             if b in action_order:
                 action_order.remove(b)
@@ -165,7 +167,8 @@ def execute_policy_and_get_cost(curr_node, reward_machines, policy_bank, tester,
         elif curr_policy_u2 == curr_policy[1]:
             logger.info("STILL FOLLOWING CURRENT POLICY {}, CONTINUE".format(curr_policy[2]))
             if new_task_u2 != new_task_u1:
-                logger.info("ENCOUNTERED EVENT {} WHILE FOLLOWING {}".format(game.get_true_propositions(), curr_policy[2]))
+                logger.info(
+                    "ENCOUNTERED EVENT {} WHILE FOLLOWING {}".format(game.get_true_propositions(), curr_policy[2]))
                 bonus.append(game.get_true_propositions())
         else:
             logger.info("OOPS, WRONG WAY, PRUNE THIS OPTION")
@@ -262,100 +265,8 @@ def load_model_and_test_composition(alg_name, tester, curriculum, num_times, new
         task.render()
         print("Rewards:", r_total)
 
+        return r_total
 
-def render_mouseworld_task(alg_name, tester, curriculum, num_times, new_task, show_print):
-
-    random.seed(0)
-    sess = tf.Session()
-
-    curriculum.restart()
-
-    task_aux = Game(tester.get_task_params(curriculum.get_current_task()))
-    num_features = len(task_aux.get_features())
-    num_actions = len(task_aux.get_actions())
-    policy_bank = PolicyBankDQN(sess, num_actions, num_features,
-                                tester.learning_params, tester.get_reward_machines())
-
-    # Load the model
-    saver = tf.train.Saver()
-
-    # Get path
-    if task_aux.params.game_type == "craftworld":
-        save_model_path = '../model/' + str(task_aux.params.game_type) + '/' + task_aux.game.get_map_id()
-    else:
-        save_model_path = '../model/' + str(task_aux.params.game_type)
-
-    saver.restore(sess, tf.train.latest_checkpoint(save_model_path))
-
-    reward_machines = tester.get_reward_machines()
-    print("Loaded {} policies (RMs)".format(len(reward_machines)))
-
-    # partial-ordered RM of new task
-    new_task_rm = RewardMachine(new_task.rm_file)
-    linearized_plans = new_task.get_linearized_plan()
-    print("There are {} possible linearized plans: {}".format(len(linearized_plans), linearized_plans))
-    least_cost = float('inf')
-    best_policy = []  # list of (rm_id, state_id) corresponding to each action
-
-    for i, curr_plan in enumerate(linearized_plans):
-        # Get the least cost path for the current linearized plan
-        # cost, switching_seq = search_policy(curr_plan, tester, curriculum, new_task_rm, reward_machines,
-        #                                     policy_bank, bound=least_cost)
-        cost, switching_seq = dfs_search_policy(curr_plan, tester, curriculum, new_task_rm, reward_machines,
-                                                policy_bank, bound=least_cost)
-        if cost < least_cost:
-            print(cost, switching_seq)
-            least_cost = cost
-            best_policy = switching_seq
-
-    # Execute the best policy
-    print("Executing Best Policy...{} ({} steps)".format(best_policy, least_cost))
-    task = Game(tester.get_task_params(curriculum.get_current_task()))
-    new_task_u1 = new_task_rm.get_initial_state()
-    s1, s1_features = task.get_state_and_features()
-    r_total = 0
-    curr_policy = None
-
-    pygame.init()
-    gameDisplay = pygame.display.set_mode((task.game.params.max_x, task.game.params.max_y))
-    pygame.display.set_caption('Fake Keyboard')
-    clock = pygame.time.Clock()
-
-    for t in range(int(least_cost)):
-        if curr_policy is None:
-            curr_policy = best_policy.pop(0)
-        curr_policy_rm = reward_machines[curr_policy[0]]
-
-        a = policy_bank.get_best_action(curr_policy[0], curr_policy[1],
-                                        s1_features.reshape((1, num_features)),
-                                        add_noise=False)
-        print("Action:", Actions(a))
-        task.execute_action(a)
-
-        gameDisplay.fill(Colors.WHITE.value)
-        task.game.agent.draw_on_display(gameDisplay)
-        # for k in task.game.keyboard_keys:
-        #     k.draw_on_display(gameDisplay, letters=False)
-        task.game.draw_current_text_on_display(gameDisplay)
-        pygame.display.update()
-        clock.tick(30)
-
-        s2, s2_features = task.get_state_and_features()
-        new_task_u2 = new_task_rm.get_next_state(new_task_u1, task.get_true_propositions())
-
-        curr_policy_u2 = curr_policy_rm.get_next_state(curr_policy[1], task.get_true_propositions())
-        desired_next_state = curr_policy_rm.get_next_state(curr_policy[1], curr_policy[2])
-        if curr_policy_u2 == desired_next_state:
-            logger.info("EXECUTED ACTION {}, SWITCHING POLICIES".format(curr_policy[2]))
-            curr_policy = None
-
-        r = new_task_rm.get_reward(new_task_u1, new_task_u2, s1, a, s2)
-        r_total += r * tester.learning_params.gamma ** t
-
-        s1, s1_features = s2, s2_features
-        new_task_u1 = new_task_u2
-
-    print("Rewards:", r_total)
 
 ###################################################################################################################
 #
@@ -448,3 +359,97 @@ def search_policy(prop_order, tester, curriculum, new_task_rm, reward_machines, 
 
     min_idx = np.argmin(min_costs)
     return min_costs[min_idx], all_policies[min_idx]
+
+
+def render_mouseworld_task(alg_name, tester, curriculum, num_times, new_task, show_print):
+    random.seed(0)
+    sess = tf.Session()
+
+    curriculum.restart()
+
+    task_aux = Game(tester.get_task_params(curriculum.get_current_task()))
+    num_features = len(task_aux.get_features())
+    num_actions = len(task_aux.get_actions())
+    policy_bank = PolicyBankDQN(sess, num_actions, num_features,
+                                tester.learning_params, tester.get_reward_machines())
+
+    # Load the model
+    saver = tf.train.Saver()
+
+    # Get path
+    if task_aux.params.game_type == "craftworld":
+        save_model_path = '../model/' + str(task_aux.params.game_type) + '/' + task_aux.game.get_map_id()
+    else:
+        save_model_path = '../model/' + str(task_aux.params.game_type)
+
+    saver.restore(sess, tf.train.latest_checkpoint(save_model_path))
+
+    reward_machines = tester.get_reward_machines()
+    print("Loaded {} policies (RMs)".format(policy_bank.get_number_of_policies()))
+
+    # partial-ordered RM of new task
+    new_task_rm = RewardMachine(new_task.rm_file)
+    linearized_plans = new_task.get_linearized_plan()
+    print("There are {} possible linearized plans: {}".format(len(linearized_plans), linearized_plans))
+    least_cost = float('inf')
+    best_policy = []  # list of (rm_id, state_id) corresponding to each action
+
+    for i, curr_plan in enumerate(linearized_plans):
+        # Get the least cost path for the current linearized plan
+        # cost, switching_seq = search_policy(curr_plan, tester, curriculum, new_task_rm, reward_machines,
+        #                                     policy_bank, bound=least_cost)
+        cost, switching_seq = dfs_search_policy(curr_plan, tester, curriculum, new_task_rm, reward_machines,
+                                                policy_bank, bound=least_cost)
+        if cost < least_cost:
+            print(cost, switching_seq)
+            least_cost = cost
+            best_policy = switching_seq
+
+    # Execute the best policy
+    print("Executing Best Policy...{} ({} steps)".format(best_policy, least_cost))
+    task = Game(tester.get_task_params(curriculum.get_current_task()))
+    new_task_u1 = new_task_rm.get_initial_state()
+    s1, s1_features = task.get_state_and_features()
+    r_total = 0
+    curr_policy = None
+
+    pygame.init()
+    gameDisplay = pygame.display.set_mode((task.game.params.max_x, task.game.params.max_y))
+    pygame.display.set_caption('Fake Keyboard')
+    clock = pygame.time.Clock()
+
+    for t in range(int(least_cost)):
+        if curr_policy is None:
+            curr_policy = best_policy.pop(0)
+        curr_policy_rm = reward_machines[curr_policy[0]]
+
+        a = policy_bank.get_best_action(curr_policy[0], curr_policy[1],
+                                        s1_features.reshape((1, num_features)),
+                                        add_noise=False)
+        print("Action:", Actions(a))
+        task.execute_action(a)
+
+        gameDisplay.fill(Colors.WHITE.value)
+        task.game.agent.draw_on_display(gameDisplay)
+        # for k in task.game.keyboard_keys:
+        #     k.draw_on_display(gameDisplay, letters=False)
+        task.game.draw_current_text_on_display(gameDisplay)
+        pygame.display.update()
+        clock.tick(30)
+
+        s2, s2_features = task.get_state_and_features()
+        new_task_u2 = new_task_rm.get_next_state(new_task_u1, task.get_true_propositions())
+
+        curr_policy_u2 = curr_policy_rm.get_next_state(curr_policy[1], task.get_true_propositions())
+        desired_next_state = curr_policy_rm.get_next_state(curr_policy[1], curr_policy[2])
+        if curr_policy_u2 == desired_next_state:
+            logger.info("EXECUTED ACTION {}, SWITCHING POLICIES".format(curr_policy[2]))
+            curr_policy = None
+
+        r = new_task_rm.get_reward(new_task_u1, new_task_u2, s1, a, s2)
+        r_total += r * tester.learning_params.gamma ** t
+
+        s1, s1_features = s2, s2_features
+        new_task_u1 = new_task_u2
+
+    print("Rewards:", r_total)

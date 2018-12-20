@@ -2,13 +2,13 @@ from tester.tester import Tester
 from tester.test_utils import get_precentiles
 import numpy as np
 import os, argparse
-
+import matplotlib.pyplot as plt
 
 def export_results_water_world():
     # NOTE: We do not report performance on Map 0 because we used it as our validation map
-    maps = ["water_%d" % i for i in range(1, 11)]
+    maps = ["farm_%d" % i for i in range(1, 11)]
 
-    world = "water"
+    world = "farmfarm"
     tmp_folder = "../tmp/"
     algs = ["dqn", "hrl", "hrl-rm", "qrm"]
 
@@ -82,11 +82,30 @@ def export_results_tabular_world(world, maps):
         folder_out = os.path.join("../tmp/results", world)
         if not os.path.exists(folder_out): os.makedirs(folder_out)
         f_out = open(os.path.join(folder_out, alg + ".txt"), "w")
+
+        # Plot final stats
+        steps = []
+        rewards = []
+
         for i in range(len(results[alg])):
             step, reward = results[alg][i]
             p25, p50, p75 = get_precentiles(np.concatenate(reward))
             f_out.write(str(step) + "\t" + str(p25) + "\t" + str(p50) + "\t" + str(p75) + "\n")
+
+            steps.append(int(step))
+            rewards.append(float(p50))
+
         f_out.close()
+        plt.plot(steps, rewards, label=alg)
+        plt.xlabel("Episode")
+        plt.ylabel("Normalized discounted reward")
+        plt.legend()
+
+    plt.grid(linestyle='--')
+    if world == "craft":
+        plt.title("Minecraft")
+    plt.savefig('training-curve-craft')
+    plt.show()
 
 
 def export_results_office_world():
@@ -103,7 +122,7 @@ if __name__ == "__main__":
     # EXAMPLE: python3 export_summary.py --world="craft"
 
     # Getting params
-    worlds = ["office", "craft", "water"]
+    worlds = ["office", "craft", "farmfarm"]
 
     parser = argparse.ArgumentParser(prog="export_summary",
                                      description='After running the experiments, this algorithm computes a summary of the results.')
@@ -119,5 +138,5 @@ if __name__ == "__main__":
         export_results_office_world()
     if world == "craft":
         export_results_craft_world()
-    if world == "water":
+    if world == "farmfarm":
         export_results_water_world()

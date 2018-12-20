@@ -10,6 +10,8 @@ from os import listdir
 from os.path import isfile, join
 from reward_machines.reward_machine import RewardMachine
 from baselines.hrl import MetaController
+from qrm.experiments import dfs_search_policy
+from worlds.game_objects import Actions
 
 
 def run_hrl_baseline(sess, rm_file, meta_controllers, options, policy_bank, tester, curriculum, replay_buffer,
@@ -264,7 +266,6 @@ def run_hrl_save_model(alg_name, tester, curriculum, num_times, show_print, use_
 
         # initializing the bank of policies with one policy per option
         policy_bank = PolicyBankDQN(sess, num_actions, num_features, learning_params, options)
-
         # Task loop
         while not curriculum.stop_learning():
             if show_print: print("Current step:", curriculum.get_current_step(), "from", curriculum.total_steps)
@@ -294,3 +295,150 @@ def run_hrl_save_model(alg_name, tester, curriculum, num_times, show_print, use_
     # Showing results
     tester.show_results()
     print("Time:", "%0.2f" % ((time.time() - time_init) / 60), "mins")
+
+
+def load_hrl_and_test_composition(alg_name, tester, curriculum, num_times, new_task, show_print):
+    learning_params = tester.learning_params
+
+    for n in range(num_times):
+        random.seed(n)
+        sess = tf.Session()
+
+        curriculum.restart()
+
+        # Initialize a policy_bank and meta-controller graph to be loaded with saved model
+
+        # Loading options for this experiment
+        option_folder = "../experiments/%s/options/" % tester.get_world_name()
+
+        options = []  # NOTE: The policy bank also uses this list (in the same order)
+        option2file = []
+        for option_file in _get_option_files(
+                option_folder):  # NOTE: The option id indicates what the option does (e.g. "a&!n")
+            option = RewardMachine(join(option_folder, option_file + ".txt"))
+            options.append(option)
+            option2file.append(option_file)
+
+        # getting num inputs and outputs net
+        task_aux = Game(tester.get_task_params(curriculum.get_current_task()))
+        num_features = len(task_aux.get_features())
+        num_actions = len(task_aux.get_actions())
+
+        # initializing the meta controllers (one metacontroller per task)
+        meta_controllers = []
+        reward_machines = tester.get_reward_machines()
+        for i in range(len(reward_machines)):
+            rm = reward_machines[i]
+            num_states = len(rm.get_states())
+            policy_name = "Reward_Machine_%d" % i
+            mc = MetaController(sess, policy_name, options, option2file, rm, True, learning_params, num_features,
+                                num_states, show_print)
+            meta_controllers.append(mc)
+
+        # initializing the bank of policies with one policy per option
+        policy_bank = PolicyBankDQN(sess, num_actions, num_features, learning_params, options)
+
+        saver = tf.train.Saver()
+        # Get path
+        if task_aux.params.game_type == "craftworld":
+            save_model_path = '../model/' + str(task_aux.params.game_type) + '/' + task_aux.game.get_map_id()
+        else:
+            save_model_path = '../model/' + str(task_aux.params.game_type)
+
+        saver.restore(sess, tf.train.latest_checkpoint(save_model_path))
+
+        print("Loaded {} policies (RMs)".format(policy_bank.policies))
+
+        # partial-ordered RM of new task
+        new_task_rm = RewardMachine(new_task.rm_file)
+        linearized_plans = new_task.get_linearized_plan()
+        print("There are {} possible linearized plans: {}".format(len(linearized_plans), linearized_plans))
+        least_cost = float('inf')
+        best_policy = []  # list of (rm_id, state_id) corresponding to each action
+
+        for i, curr_plan in enumerate(linearized_plans):
+            # Get the least cost path for the current linearized plan
+            cost, switching_seq = execute_option_sequence(curr_plan, tester, curriculum, new_task_rm, options,
+                                                          option2file, policy_bank, bound=least_cost)
+            if cost < least_cost:
+                print(cost, switching_seq)
+                least_cost = cost
+                best_policy = switching_seq
+
+        # Execute the best policy
+        print("Executing Best Policy...{} ({} steps)".format(best_policy, least_cost))
+        # task = Game(tester.get_task_params(curriculum.get_current_task()))
+        # new_task_u1 = new_task_rm.get_initial_state()
+        # s1, s1_features = task.get_state_and_features()
+        # r_total = 0
+        # curr_policy = None
+        # for t in range(int(least_cost)):
+        #     task.render()
+        #     if curr_policy is None:
+        #         curr_policy = best_policy.pop(0)
+        #     curr_policy_rm = reward_machines[curr_policy[0]]
+        #
+        #     a = policy_bank.get_best_action(curr_policy[0], curr_policy[1],
+        #                                     s1_features.reshape((1, num_features)),
+        #                                     add_noise=False)
+        #     print("Action:", Actions(a))
+        #     task.execute_action(a)
+        #
+        #     s2, s2_features = task.get_state_and_features()
+        #     new_task_u2 = new_task_rm.get_next_state(new_task_u1, task.get_true_propositions())
+        #
+        #     curr_policy_u2 = curr_policy_rm.get_next_state(curr_policy[1], task.get_true_propositions())
+        #     desired_next_state = curr_policy_rm.get_next_state(curr_policy[1], curr_policy[2])
+        #     if curr_policy_u2 == desired_next_state:
+        #         curr_policy = None
+        #
+        #     r = new_task_rm.get_reward(new_task_u1, new_task_u2, s1, a, s2)
+        #     r_total += r * tester.learning_params.gamma ** t
+        #
+        #     s1, s1_features = s2, s2_features
+        #     new_task_u1 = new_task_u2
+        # task.render()
+        # print("Rewards:", r_total)
+        #
+        # return r_total
+
+
+def execute_option_sequence(curr_plan, tester, curriculum, new_task_rm, options, option2file, policy_bank, bound=np.inf):
+    cost = np.inf
+    switch_seq = []
+
+    game = Game(tester.get_task_params(curriculum.get_current_task()))
+    num_features = len(game.get_features())
+    new_task_u1 = new_task_rm.get_initial_state()
+    s1, s1_features = game.get_state_and_features()
+    r_total = 0
+
+    curr_op = 0
+    for t in range(tester.testing_params.num_steps):
+        p = curr_plan[curr_op]
+        option_id = option2file.index(p)
+        curr_rm = options[option_id]
+        print(option2file)
+        # print(curr_rm.get_txt_representation())
+
+        a = policy_bank.get_best_action(3, curr_rm.get_initial_state(),
+                                        s1_features.reshape((1, num_features)))
+
+        print(Actions(a))
+        game.execute_action(a)
+        game.render()
+        s2, s2_features = game.get_state_and_features()
+        new_task_u2 = new_task_rm.get_next_state(new_task_u1, game.get_true_propositions())
+        curr_policy_u2 = curr_rm.get_next_state(curr_rm.get_initial_state(), game.get_true_propositions())
+
+        if game.get_true_propositions() == p:
+            curr_op += 1
+            switch_seq.append((option_id, curr_rm.get_initial_state(), p))
+            if curr_op >= len(curr_plan):
+                break
+
+        s1, s1_features = s2, s2_features
+        new_task_u1 = new_task_u2
+
+    return t, switch_seq
+

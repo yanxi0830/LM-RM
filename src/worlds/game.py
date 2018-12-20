@@ -11,7 +11,7 @@ class GameParams:
     def __init__(self, game_type, game_params):
         self.game_type = game_type
         self.game_params = game_params
-        if self.game_type not in ["officeworld", "craftworld", "keyboardworld", "mouseworld"]:
+        if self.game_type not in ["officeworld", "craftworld", "keyboardworld", "waterworld"]:
             print(self.game_type, "is not currently supported")
             exit()
 

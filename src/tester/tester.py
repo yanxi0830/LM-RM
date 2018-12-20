@@ -63,7 +63,7 @@ class Tester:
             if self.game_type == "keyboardworld":
                 self.world = TesterKeyboardWorld(None, None, data['world'])
             if self.game_type == "mouseworld":
-                self.world = TesterMouseWorld(None, None, data['world'])
+                self.world = TesterMouseWorld(None, data['world'])
 
             self.results = data['results']
             self.steps = data['steps']

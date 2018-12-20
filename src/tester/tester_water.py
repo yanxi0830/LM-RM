@@ -1,5 +1,5 @@
 from worlds.game import GameParams
-from worlds.water_world import WaterWorldParams
+from worlds.farm_world import WaterWorldParams
 
 
 class TesterWaterWorld:

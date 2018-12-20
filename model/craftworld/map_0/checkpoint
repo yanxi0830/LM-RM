@@ -1,2 +1,2 @@
-model_checkpoint_path: "qrm"
-all_model_checkpoint_paths: "qrm"
+model_checkpoint_path: "hrl-rm"
+all_model_checkpoint_paths: "hrl-rm"
