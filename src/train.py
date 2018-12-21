@@ -7,7 +7,7 @@ from qrm.learning_params import LearningParameters
 from qrm.experiments import run_qrm_save_model
 from baselines.run_hrl import run_hrl_save_model
 from baselines.run_dqn import run_dqn_save_model
-
+from baselines.run_options import run_options_save_model
 
 def get_params_craft_world(experiment):
     step_unit = 1000
@@ -258,6 +258,8 @@ def train_policy(world, alg_name, experiment, num_times, show_print):
         run_hrl_save_model(alg_name, tester, curriculum, num_times, show_print, use_rm=True)
     if alg_name == "dqn":
         run_dqn_save_model(alg_name, tester, curriculum, num_times, show_print)
+    if alg_name == "options":
+        run_options_save_model(alg_name, tester, curriculum, num_times, show_print)
 
 
 if __name__ == "__main__":

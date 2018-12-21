@@ -1,6 +1,6 @@
 def add_training_args(parser):
-    algorithms = ["dqn", "hrl", "hrl-rm", "qrm"]
-    worlds = ["office", "craft", "keyboard", "mouse"]
+    algorithms = ["dqn", "hrl", "hrl-rm", "qrm", "options"]
+    worlds = ["office", "craft", "farm"]
 
     parser.add_argument('--algorithm', default='qrm', type=str,
                         help='This parameter indicated which RL algorithm to use. The options are: ' + str(algorithms))
@@ -42,7 +42,7 @@ def add_run_args(parser):
 
 
 def add_landmark_args(parser):
-    worlds = ["office", "craft", "keyboard", "mouse"]
+    worlds = ["office", "craft", "farm"]
 
     parser.add_argument('--domain_file', default="../domains/office/domain.pddl", type=str,
                         help='High-level domain file')
