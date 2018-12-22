@@ -183,7 +183,112 @@ def execute_policy_and_get_cost(curr_node, reward_machines, policy_bank, tester,
     return np.inf, game, new_task_u1, 0, bonus
 
 
+def get_qrm_generalization_performance(alg_name, tester, curriculum, num_times, new_tasks, show_print):
+    """
+    Testing all the tasks in new_tasks and return the success rate and cumulative reward
+    """
+    sess = tf.Session()
+    curriculum.restart()
+    # Initialize a policy_bank graph to be loaded with saved model
+    task_aux = Game(tester.get_task_params(curriculum.get_current_task()))
+    num_features = len(task_aux.get_features())
+    num_actions = len(task_aux.get_actions())
+    policy_bank = PolicyBankDQN(sess, num_actions, num_features,
+                                tester.learning_params, tester.get_reward_machines())
+
+    # Load the model
+    saver = tf.train.Saver()
+    # Get path
+    if task_aux.params.game_type != "officeworld":
+        save_model_path = '../model/' + str(task_aux.params.game_type) + '/' + task_aux.game.get_map_id()
+    else:
+        save_model_path = '../model/' + str(task_aux.params.game_type)
+    saver.restore(sess, tf.train.latest_checkpoint(save_model_path))
+
+    reward_machines = tester.get_reward_machines()
+    print("Loaded {} policies (RMs)".format(len(reward_machines)))
+
+    success_count = 0
+    all_task_rewards = []
+
+    for new_task in new_tasks:
+        # partial-ordered RM of new task
+        new_task_rm = RewardMachine(new_task.rm_file)
+        linearized_plans = new_task.get_linearized_plan()
+        print("There are {} possible linearized plans: {}".format(len(linearized_plans), linearized_plans))
+        least_cost = float('inf')
+        best_policy = []  # list of (rm_id, state_id) corresponding to each action
+
+        for i, curr_plan in enumerate(linearized_plans):
+            # Get the least cost path for the current linearized plan
+            cost, switching_seq = dfs_search_policy(curr_plan, tester, curriculum, new_task_rm, reward_machines,
+                                                    policy_bank, bound=least_cost)
+            if cost < least_cost:
+                print(cost, switching_seq)
+                least_cost = cost
+                best_policy = switching_seq
+                # finding optimal takes too long, end early if find a solution
+                break
+
+        # Couldn't solve the task
+        if least_cost == np.inf:
+            print("Failed to execute this task: {}".format(new_task))
+            r_total = 0.0
+            all_task_rewards.append(r_total)
+            continue
+
+        # Execute the best policy
+        print("Executing Best Policy...{} ({} steps)".format(best_policy, least_cost))
+        task = Game(tester.get_task_params(curriculum.get_current_task()))
+        new_task_u1 = new_task_rm.get_initial_state()
+        s1, s1_features = task.get_state_and_features()
+        r_total = 0
+        curr_policy = None
+
+        for t in range(int(least_cost)):
+            if show_print:
+                task.render()
+            if curr_policy is None:
+                curr_policy = best_policy.pop(0)
+            curr_policy_rm = reward_machines[curr_policy[0]]
+
+            a = policy_bank.get_best_action(curr_policy[0], curr_policy[1],
+                                            s1_features.reshape((1, num_features)),
+                                            add_noise=False)
+            task.execute_action(a)
+
+            s2, s2_features = task.get_state_and_features()
+            new_task_u2 = new_task_rm.get_next_state(new_task_u1, task.get_true_propositions())
+
+            curr_policy_u2 = curr_policy_rm.get_next_state(curr_policy[1], task.get_true_propositions())
+            desired_next_state = curr_policy_rm.get_next_state(curr_policy[1], curr_policy[2])
+            if curr_policy_u2 == desired_next_state:
+                logger.info("EXECUTED ACTION {}, SWITCHING POLICIES".format(curr_policy[2]))
+                curr_policy = None
+
+            r = new_task_rm.get_reward(new_task_u1, new_task_u2, s1, a, s2)
+            r_total += r * tester.learning_params.gamma ** t
+
+            s1, s1_features = s2, s2_features
+            new_task_u1 = new_task_u2
+        if show_print:
+            task.render()
+        print("Rewards:", r_total)
+
+        all_task_rewards.append(r_total)
+        if r_total > 0:
+            success_count += 1
+
+    success_rate = float(success_count) / len(new_tasks)
+    acc_reward = sum(all_task_rewards)
+    return success_rate, acc_reward
+
+
 def load_model_and_test_composition(alg_name, tester, curriculum, num_times, new_task, show_print):
+    """
+    Testing a single task (see run_new_task.py)
+    TODO: refactor with get_qrm_generalization_performance
+    """
     for n in range(num_times):
         random.seed(n)
         sess = tf.Session()
@@ -201,7 +306,7 @@ def load_model_and_test_composition(alg_name, tester, curriculum, num_times, new
         saver = tf.train.Saver()
 
         # Get path
-        if task_aux.params.game_type == "craftworld":
+        if task_aux.params.game_type != "officeworld":
             save_model_path = '../model/' + str(task_aux.params.game_type) + '/' + task_aux.game.get_map_id()
         else:
             save_model_path = '../model/' + str(task_aux.params.game_type)
@@ -237,7 +342,8 @@ def load_model_and_test_composition(alg_name, tester, curriculum, num_times, new
         r_total = 0
         curr_policy = None
         for t in range(int(least_cost)):
-            task.render()
+            if show_print:
+                task.render()
             if curr_policy is None:
                 curr_policy = best_policy.pop(0)
             curr_policy_rm = reward_machines[curr_policy[0]]
@@ -262,7 +368,8 @@ def load_model_and_test_composition(alg_name, tester, curriculum, num_times, new
 
             s1, s1_features = s2, s2_features
             new_task_u1 = new_task_u2
-        task.render()
+        if show_print:
+            task.render()
         print("Rewards:", r_total)
 
         return r_total

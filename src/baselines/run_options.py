@@ -53,7 +53,7 @@ def run_options_task(sess, rm_file, curr_option_id, options, option2file, policy
     u1 = rm.get_initial_state()
 
     for t in range(num_steps):
-        if random.random() < 0.1:
+        if random.random() < 0.3:   # more exploration improve performance?
             a = random.choice(actions)
         else:
             a = policy_bank.get_best_action(curr_option_id, u1, s1_features.reshape((1, num_features)))

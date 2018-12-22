@@ -1,7 +1,7 @@
 import argparse
 from argparser import *
 from qrm.experiments import load_model_and_test_composition
-from baselines.run_hrl import load_hrl_and_test_composition
+from baselines.run_hrl import load_hrl_model_test_composition
 from train import *
 from reward_machines.task import Task
 import time
@@ -17,10 +17,13 @@ def run_task(world, alg_name, experiment, num_times, new_task, show_print):
     if world == 'mouseworld':
         testing_params, learning_params, tester, curriculum = get_params_mouse_world(experiment)
 
+    r = 0
     if alg_name == "qrm":
-        load_model_and_test_composition(alg_name, tester, curriculum, num_times, new_task, show_print)
-    elif alg_name == "hrl":
-        load_hrl_and_test_composition(alg_name, tester, curriculum, num_times, new_task, show_print)
+        r = load_model_and_test_composition(alg_name, tester, curriculum, num_times, new_task, show_print)
+    elif alg_name == "hrl-rm":
+        r = load_hrl_model_test_composition(alg_name, tester, curriculum, num_times, new_task, show_print)
+
+    return r
 
 
 if __name__ == "__main__":

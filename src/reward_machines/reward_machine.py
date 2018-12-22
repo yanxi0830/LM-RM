@@ -8,6 +8,7 @@ from reward_machines.reward_functions import *
 from reward_machines.reward_machine_utils import evaluate_dnf, are_these_machines_equivalent
 import random
 
+
 class RewardMachine:
     def __init__(self, file=None):
         # <U,u0,delta_u,delta_r>
@@ -106,7 +107,7 @@ class RewardMachine:
 
     def get_random_next_prop(self, u1):
         # return *any* useful macro-action edge, quick hack
-        useful = [self.delta_u[u1][u2] for u2 in self.delta_u[u1] if u1 != u2]
+        useful = [self.delta_u[u1][u2] for u2 in self.delta_u[u1] if u1 != u2 and u2 != self.u_broken]
         return random.choice(useful)
 
     def get_state_with_transition(self, prop):
