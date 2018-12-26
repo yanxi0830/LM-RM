@@ -2,6 +2,7 @@ import argparse
 from argparser import *
 from qrm.experiments import load_model_and_test_composition
 from baselines.run_hrl import load_hrl_model_test_composition
+from baselines.run_options import load_options_model_test_composition
 from train import *
 from reward_machines.task import Task
 import time
@@ -21,8 +22,11 @@ def run_task(world, alg_name, experiment, num_times, new_task, show_print):
     if alg_name == "qrm":
         r = load_model_and_test_composition(alg_name, tester, curriculum, num_times, new_task, show_print)
     elif alg_name == "hrl-rm":
-        r = load_hrl_model_test_composition(alg_name, tester, curriculum, num_times, new_task, show_print)
-
+        r = load_hrl_model_test_composition(alg_name, tester, curriculum, num_times, new_task, show_print, use_rm=True)
+    elif alg_name == "hrl":
+        r = load_hrl_model_test_composition(alg_name, tester, curriculum, num_times, new_task, show_print, use_rm=False)
+    elif alg_name == "options":
+        r = load_options_model_test_composition(alg_name, tester, curriculum, num_times, new_task, show_print)
     return r
 
 
@@ -53,7 +57,7 @@ if __name__ == "__main__":
     plan_file = args.plan_file
     rm_file_dest = args.rm_file_dest
 
-    new_task = Task(domain_file, prob_file, plan_file, rm_file_dest, world)
+    new_task = Task(domain_file, prob_file, plan_file, rm_file_dest, world, use_partial_order=False)
     print("world: " + world, "alg_name: " + alg_name, "experiment: " + experiment, "num_times: " + str(num_times),
           show_print)
 

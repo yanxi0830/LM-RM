@@ -22,6 +22,7 @@ GOALS:
 """
 import argparse
 import itertools
+import random
 
 parser = argparse.ArgumentParser(
     description='generate OfficeWorld PDDL tasks'
@@ -62,13 +63,18 @@ def format_problem(name, goals_list):
 
 
 if __name__ == "__main__":
-    j = 0
-    for i in [3]:
-        for x in itertools.combinations(GOALS, i):
-            task = list(x)
-            pddl = format_problem(str(j), task)
-            write_file('../../domains/craft/tasks/{}.pddl'.format(j), pddl)
-            j += 1
+    NUM_TASKS = 153
+    LO = 3
+    HI = 17
+    problem_bank = []
 
-    # NUM_TASKS = 200
-    # for j in range(NUM_TASKS):
+    for i in range(LO, HI+1):
+        problem_bank += list(itertools.combinations(GOALS, i))
+
+    random.shuffle(problem_bank)
+
+    for j in range(NUM_TASKS):
+        task = list(problem_bank[j])
+        pddl = format_problem(str(j), task)
+        write_file('../../domains/craft/tasks/{}.pddl'.format(j), pddl)
+

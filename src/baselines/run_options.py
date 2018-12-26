@@ -11,7 +11,7 @@ from os.path import isfile, join
 from qrm.policy_bank_dqn import PolicyBankDQN
 from common.replay_buffer import create_experience_replay_buffer
 from tester.saver import Saver
-
+import numpy as np
 
 def _get_option_files(folder):
     return [f.replace(".txt", "") for f in listdir(folder) if isfile(join(folder, f))]
@@ -206,7 +206,7 @@ def run_options_save_model(alg_name, tester, curriculum, num_times, show_print):
             run_options_task(sess, rm_file, curr_option_id, options, option2file, policy_bank, tester, curriculum, replay_buffer, beta_schedule, show_print)
 
         # Save session
-        if task_aux.params.game_type == "craftworld":
+        if task_aux.params.game_type != "officeworld":
             save_model_path = '../model/' + str(
                 task_aux.params.game_type) + '/' + task_aux.game.get_map_id() + '/' + str(alg_name)
         else:
@@ -225,3 +225,97 @@ def run_options_save_model(alg_name, tester, curriculum, num_times, show_print):
     # Showing results
     tester.show_results()
     print("Time:", "%0.2f" % ((time.time() - time_init) / 60), "mins")
+
+
+def load_options_model_test_composition(alg_name, tester, curriculum, num_times, new_task, show_print):
+    learning_params = tester.learning_params
+
+    for n in range(num_times):
+        random.seed(n)
+        sess = tf.Session()
+        curriculum.restart()
+
+        options, option2file = get_options_rm(tester)
+        curr_option_id = 0
+        # getting num inputs and outputs net
+        task_aux = Game(tester.get_task_params(curriculum.get_current_task()))
+        num_features = len(task_aux.get_features())
+        num_actions = len(task_aux.get_actions())
+
+        # initializing the bank of policies with one policy per option
+        policy_bank = PolicyBankDQN(sess, num_actions, num_features, learning_params, options)
+
+        # Load the model
+        saver = tf.train.Saver()
+
+        # Get path
+        if task_aux.params.game_type != "officeworld":
+            save_model_path = '../model/' + str(task_aux.params.game_type) + '/' + task_aux.game.get_map_id()
+        else:
+            save_model_path = '../model/' + str(task_aux.params.game_type)
+        saver.restore(sess, tf.train.latest_checkpoint(save_model_path))
+
+        reward_machines = tester.get_reward_machines()
+        print("Loaded {} policies (options)".format(policy_bank.get_number_of_policies()))
+
+        new_task_rm = RewardMachine(new_task.rm_file)
+        linearized_plans = new_task.get_linearized_plan()
+        print("There are {} possible linearized plans: {}".format(len(linearized_plans), linearized_plans))
+
+        least_cost = float('inf')
+        best_policy = []  # linearized plan
+        best_reward = 0
+        for i, curr_plan in enumerate(linearized_plans):
+            cost, r_total = execute_plan_get_cost(curr_plan, tester, curriculum, options, option2file, policy_bank,
+                                                  new_task_rm)
+            if cost < least_cost:
+                least_cost = cost
+                best_policy = curr_plan
+                best_reward = r_total
+
+        print("Rewards", best_reward)
+        print("Steps", least_cost)
+        print(best_policy)
+
+
+def execute_plan_get_cost(curr_plan, tester, curriculum, options, option2file, policy_bank, new_task_rm):
+    task = Game(tester.get_task_params(curriculum.get_current_task()))
+    num_features = len(task.get_features())
+    u1 = new_task_rm.get_initial_state()
+    s1, s1_features = task.get_state_and_features()
+
+    prop_idx = 0
+    r_total = 0
+    for t in range(tester.testing_params.num_steps):
+        macro_action = curr_plan[prop_idx]
+        op_id = option2file.index(macro_action)
+
+        # Choosing an action using the right policy
+        a = policy_bank.get_best_action(op_id, options[op_id].get_initial_state(),
+                                        s1_features.reshape((1, num_features)), add_noise=False)
+
+        task.execute_action(a)
+        # task.render()
+        # print(Actions(a))
+        s2, s2_features = task.get_state_and_features()
+        events = task.get_true_propositions()
+        u2 = new_task_rm.get_next_state(u1, events)
+        r = new_task_rm.get_reward(u1, u2, s1, a, s2)
+
+        r_total += r * tester.learning_params.gamma ** t
+
+        # Restarting the environment (Game Over)
+        if task.is_env_game_over():
+            return np.inf, 0
+
+        if r > 0 and new_task_rm.is_terminal_state(u2):
+            return t+1, r_total
+
+        if u2 != u1:
+            prop_idx += 1
+
+        # Moving to the next state
+        s1, s1_features, u1 = s2, s2_features, u2
+
+    return np.inf, 0
+

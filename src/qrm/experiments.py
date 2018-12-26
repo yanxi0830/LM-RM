@@ -90,7 +90,7 @@ def dfs_search_policy(prop_order, tester, curriculum, new_task_rm, reward_machin
 
     while len(open_list) != 0 and action_idx < len(action_order):
         curr_node = open_list.pop()
-        action_idx = len(curr_node.props)
+        action_idx = 0 if len(action_order) == 1 else len(curr_node.props)
 
         if len(curr_node.props) == 0:  # cost for root is 0
             p = action_order[action_idx]  # next level
@@ -99,7 +99,7 @@ def dfs_search_policy(prop_order, tester, curriculum, new_task_rm, reward_machin
             continue
 
         # don't expand
-        if curr_node.cost == np.inf or curr_node.cost > least_cost:
+        if curr_node != root and (curr_node.cost == np.inf or curr_node.cost > least_cost):
             continue
 
         # execute the current policy to complete action
@@ -107,6 +107,7 @@ def dfs_search_policy(prop_order, tester, curriculum, new_task_rm, reward_machin
                                                                                      policy_bank, tester, new_task_rm,
                                                                                      curr_node.parent.new_task_state,
                                                                                      least_cost)
+
         for b in bonus_events:
             if b in action_order:
                 action_order.remove(b)
@@ -351,7 +352,7 @@ def load_model_and_test_composition(alg_name, tester, curriculum, num_times, new
             a = policy_bank.get_best_action(curr_policy[0], curr_policy[1],
                                             s1_features.reshape((1, num_features)),
                                             add_noise=False)
-            print("Action:", Actions(a))
+            if show_print: print("Action:", Actions(a))
             task.execute_action(a)
 
             s2, s2_features = task.get_state_and_features()

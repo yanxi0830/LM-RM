@@ -4,6 +4,7 @@ import numpy as np
 import os, argparse
 import matplotlib.pyplot as plt
 
+
 def export_results_water_world():
     # NOTE: We do not report performance on Map 0 because we used it as our validation map
     maps = ["farm_%d" % i for i in range(1, 11)]
@@ -57,7 +58,7 @@ def export_results_water_world():
 
 def export_results_tabular_world(world, maps):
     tmp_folder = "../tmp/"
-    algs = ["dqn", "hrl", "hrl-rm", "qrm"]
+    algs = ["dqn", "hrl", "hrl-rm", "qrm", "options"]
 
     results = {}
     for alg in algs:
