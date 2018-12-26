@@ -21,6 +21,7 @@ GOALS:
     (have-bow)
 """
 import argparse
+import itertools
 
 parser = argparse.ArgumentParser(
     description='generate OfficeWorld PDDL tasks'
@@ -61,7 +62,13 @@ def format_problem(name, goals_list):
 
 
 if __name__ == "__main__":
-    for i in range(len(GOALS)-3):
-        task = GOALS[i:i+3]
-        pddl = format_problem(str(i), task)
-        write_file('../../domains/craft/tasks/{}.pddl'.format(i), pddl)
+    j = 0
+    for i in [3]:
+        for x in itertools.combinations(GOALS, i):
+            task = list(x)
+            pddl = format_problem(str(j), task)
+            write_file('../../domains/craft/tasks/{}.pddl'.format(j), pddl)
+            j += 1
+
+    # NUM_TASKS = 200
+    # for j in range(NUM_TASKS):
