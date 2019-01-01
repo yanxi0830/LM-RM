@@ -147,7 +147,7 @@ def run_dqn_save_model(alg_name, tester, curriculum, num_times, show_print):
             run_dqn_baseline(sess, rm_file, policy_bank, tester, curriculum, show_print)
 
         # Save session
-        if task_aux.params.game_type != "officeworld":
+        if task_aux.params.game_type == "craftworld":
             save_model_path = '../model/' + str(
                 task_aux.params.game_type) + '/' + task_aux.game.get_map_id() + '/' + str(alg_name)
         else:

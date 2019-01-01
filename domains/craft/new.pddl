@@ -5,7 +5,7 @@
 	(:init
 	)
 	(:goal (and
-		(have-wood)
+		(have-goldware)
 		)
 	)
 )

@@ -63,7 +63,7 @@ def format_problem(name, goals_list):
 
 
 if __name__ == "__main__":
-    NUM_TASKS = 153
+    NUM_TASKS = 200
     LO = 3
     HI = 17
     problem_bank = []

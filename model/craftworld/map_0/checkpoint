@@ -1,2 +1,2 @@
-model_checkpoint_path: "options"
-all_model_checkpoint_paths: "options"
+model_checkpoint_path: "hrl"
+all_model_checkpoint_paths: "hrl"

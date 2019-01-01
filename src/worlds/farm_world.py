@@ -13,7 +13,7 @@ Auxiliary class with the configuration parameters that the Game class needs
 """
 
 
-class WaterWorldParams:
+class FarmWorldParams:
     def __init__(self, state_file=None, max_x=1000, max_y=700, b_num_colors=6,
                  b_radius=20, b_velocity=30, b_num_per_color=10,
                  use_velocities=True, ball_disappear=True):
@@ -30,7 +30,7 @@ class WaterWorldParams:
         self.ball_disappear = ball_disappear
 
 
-class WaterWorld:
+class FarmWorld:
 
     def __init__(self, params):
         self.params = params
@@ -107,6 +107,9 @@ class WaterWorld:
 
     def get_state(self):
         return None  # we are only using "simple reward machines" for the craft domain
+
+    def get_map_id(self):
+        return 'map_0'
 
     def get_true_propositions(self):
         """
@@ -278,7 +281,7 @@ class WaterWorld:
                 if not self.params.ball_disappear or not agent.is_colliding(b):
                     init = 2 * i + 4
                     features[init:init + 2] = (b.pos - agent.pos) / pos_max
-        print("FEATURES", features)
+        # print("FEATURES", features)
         return [], features
         # return [b.pos for b in balls if not agent.is_colliding(b)], features
 
@@ -343,8 +346,8 @@ class WaterWorld:
         with open(filename, 'rb') as input:
             self.agent = pickle.load(input)
             self.balls = pickle.load(input)
-            print("AGENT: ", self.agent)
-            print("BALLS: ", self.balls)
+            # print("AGENT: ", self.agent)
+            # print("BALLS: ", self.balls)
         if not self.use_velocities:
             # Removing balls velocities
             for b in self.balls:
@@ -491,7 +494,7 @@ def play():
         use_velocities = True
         ball_disappear = False
 
-        params = WaterWorldParams(state_file, b_radius=b_radius, max_x=max_x, max_y=max_y,
+        params = FarmWorldParams(state_file, b_radius=b_radius, max_x=max_x, max_y=max_y,
                                   b_num_per_color=b_num_per_color, use_velocities=use_velocities,
                                   ball_disappear=ball_disappear)
     else:
@@ -591,12 +594,12 @@ def save_random_world(num_worlds, folder_out="../../experiments/farm/maps/"):
     b_num_per_color = 2
     b_radius = 15
     use_velocities = True
-    params = WaterWorldParams(None, b_radius=b_radius, max_x=max_x, max_y=max_y, b_num_per_color=b_num_per_color,
+    params = FarmWorldParams(None, b_radius=b_radius, max_x=max_x, max_y=max_y, b_num_per_color=b_num_per_color,
                               use_velocities=use_velocities)
 
     for i in range(num_worlds):
         random.seed(i)
-        game = WaterWorld(params)
+        game = FarmWorld(params)
         game.save_state("%sworld_%d.pkl" % (folder_out, i))
 
 

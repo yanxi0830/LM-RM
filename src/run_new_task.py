@@ -17,6 +17,8 @@ def run_task(world, alg_name, experiment, num_times, new_task, show_print):
         testing_params, learning_params, tester, curriculum = get_params_keyboard_world(experiment)
     if world == 'mouseworld':
         testing_params, learning_params, tester, curriculum = get_params_mouse_world(experiment)
+    if world == 'farmworld':
+        testing_params, learning_params, tester, curriculum = get_params_farm_world(experiment)
 
     r = 0
     if alg_name == "qrm":

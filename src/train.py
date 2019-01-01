@@ -8,6 +8,8 @@ from qrm.experiments import run_qrm_save_model
 from baselines.run_hrl import run_hrl_save_model
 from baselines.run_dqn import run_dqn_save_model
 from baselines.run_options import run_options_save_model
+from worlds.farm_world import Ball, BallAgent
+
 
 def get_params_craft_world(experiment):
     step_unit = 1000

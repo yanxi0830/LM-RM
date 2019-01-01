@@ -342,10 +342,11 @@ def load_hrl_model_test_composition(alg_name, tester, curriculum, num_times, new
         saver = tf.train.Saver()
 
         # Get path
-        if task_aux.params.game_type != "officeworld":
+        if task_aux.params.game_type == "craftworld":
             save_model_path = '../model/' + str(task_aux.params.game_type) + '/' + task_aux.game.get_map_id()
         else:
             save_model_path = '../model/' + str(task_aux.params.game_type)
+        print("SAVE MODEL PATH", save_model_path)
         saver.restore(sess, tf.train.latest_checkpoint(save_model_path))
 
         reward_machines = tester.get_reward_machines()
@@ -442,7 +443,7 @@ def get_hrl_generalization_performance(alg_name, tester, curriculum, num_times, 
     # Load the model
     saver = tf.train.Saver()
     # Get path
-    if task_aux.params.game_type != "officeworld":
+    if task_aux.params.game_type == "craftworld":
         save_model_path = '../model/' + str(task_aux.params.game_type) + '/' + task_aux.game.get_map_id()
     else:
         save_model_path = '../model/' + str(task_aux.params.game_type)
@@ -477,11 +478,10 @@ def get_hrl_generalization_performance(alg_name, tester, curriculum, num_times, 
 
         if least_cost == np.inf:
             print("Failed to execute this task: {}".format(new_task))
-            r_total = 0.0
-            all_task_rewards.append(r_total)
             continue
 
     success_rate = float(success_count) / len(new_tasks)
     acc_reward = sum(all_task_rewards)
+    print(all_task_rewards)
     return success_rate, acc_reward
 

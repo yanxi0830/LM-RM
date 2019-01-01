@@ -51,7 +51,7 @@ def run_qrm_save_model(alg_name, tester, curriculum, num_times, show_print):
             run_qrm_task(sess, rm_file, policy_bank, tester, curriculum, replay_buffer, beta_schedule, show_print)
 
         # Save session
-        if task_aux.params.game_type != "officeworld":
+        if task_aux.params.game_type == "craftworld":
             save_model_path = '../model/' + str(
                 task_aux.params.game_type) + '/' + task_aux.game.get_map_id() + '/' + str(alg_name)
         else:
@@ -200,7 +200,7 @@ def get_qrm_generalization_performance(alg_name, tester, curriculum, num_times, 
     # Load the model
     saver = tf.train.Saver()
     # Get path
-    if task_aux.params.game_type != "officeworld":
+    if task_aux.params.game_type == "farmworld":
         save_model_path = '../model/' + str(task_aux.params.game_type) + '/' + task_aux.game.get_map_id()
     else:
         save_model_path = '../model/' + str(task_aux.params.game_type)
@@ -282,6 +282,7 @@ def get_qrm_generalization_performance(alg_name, tester, curriculum, num_times, 
 
     success_rate = float(success_count) / len(new_tasks)
     acc_reward = sum(all_task_rewards)
+    print(all_task_rewards)
     return success_rate, acc_reward
 
 
@@ -307,7 +308,7 @@ def load_model_and_test_composition(alg_name, tester, curriculum, num_times, new
         saver = tf.train.Saver()
 
         # Get path
-        if task_aux.params.game_type != "officeworld":
+        if task_aux.params.game_type == "craftworld":
             save_model_path = '../model/' + str(task_aux.params.game_type) + '/' + task_aux.game.get_map_id()
         else:
             save_model_path = '../model/' + str(task_aux.params.game_type)

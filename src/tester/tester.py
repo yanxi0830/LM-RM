@@ -1,6 +1,6 @@
 from tester.tester_craft import TesterCraftWorld
 from tester.tester_office import TesterOfficeWorld
-from tester.tester_water import TesterWaterWorld
+from tester.tester_farm import TesterFarmWorld
 from tester.tester_keyboard import TesterKeyboardWorld
 from tester.tester_mouse import TesterMouseWorld
 from reward_machines.reward_machine import RewardMachine
@@ -26,8 +26,8 @@ class Tester:
                 self.world = TesterOfficeWorld(experiment, learning_params.gamma)
             if self.game_type == "craftworld":
                 self.world = TesterCraftWorld(experiment, learning_params.tabular_case, learning_params.gamma)
-            if self.game_type == "waterworld":
-                self.world = TesterWaterWorld(experiment, learning_params.use_random_maps)
+            if self.game_type == "farmworld":
+                self.world = TesterFarmWorld(experiment, learning_params.use_random_maps)
             if self.game_type == "keyboardworld":
                 self.world = TesterKeyboardWorld(experiment, learning_params.tabular_case, learning_params.gamma)
             if self.game_type == "mouseworld":

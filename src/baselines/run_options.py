@@ -13,6 +13,7 @@ from common.replay_buffer import create_experience_replay_buffer
 from tester.saver import Saver
 import numpy as np
 
+
 def _get_option_files(folder):
     return [f.replace(".txt", "") for f in listdir(folder) if isfile(join(folder, f))]
 

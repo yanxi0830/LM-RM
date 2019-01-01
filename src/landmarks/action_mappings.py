@@ -91,6 +91,21 @@ def office_world_action_to_prop(action):
     raise NotImplementedError(action + " is not supported")
 
 
+def farm_world_action_to_prop(action):
+    if 'get-pig' in action:
+        return 'a'
+    if 'get-chicken' in action:
+        return 'b'
+    if 'get-cow' in action:
+        return 'c'
+    if 'make-pork' in action or 'make-beef' in action or 'make-wings' in action:
+        return 'd'  # butchershop
+    if 'get-egg' in action or 'get-milk' in action:
+        return 'e'  # farmhouse
+    if 'make-dessert' in action:
+        return 'f'
+
+
 def action_to_prop(action, world):
     if world == "mouseworld":
         return mouse_world_action_to_prop(action)
@@ -100,6 +115,8 @@ def action_to_prop(action, world):
         return craft_world_action_to_prop(action)
     if world == "officeworld":
         return office_world_action_to_prop(action)
+    if world == "farmworld":
+        return farm_world_action_to_prop(action)
 
     raise NotImplementedError(world + " is not supported")
 
