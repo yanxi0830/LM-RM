@@ -4,7 +4,7 @@ def add_training_args(parser):
 
     parser.add_argument('--algorithm', default='qrm', type=str,
                         help='This parameter indicated which RL algorithm to use. The options are: ' + str(algorithms))
-    parser.add_argument('--world', default='office', type=str,
+    parser.add_argument('--world', default='farm', type=str,
                         help='This parameter indicated which domain to run. The options are: ' + str(worlds))
     parser.add_argument('--map', default=0, type=int,
                         help='This parameter indicated which map to use. It must be a number between 0 and 10.')
@@ -35,6 +35,8 @@ def add_run_args(parser):
                         help='High-level plan file, this is generated using Fast Downward')
     parser.add_argument('--rm_file_dest', default="../experiments/office/reward_machines/new_task.txt", type=str,
                         help='Reward Machine spec file destination to save to')
+
+    parser.add_argument('--use_partial', help="Use partial-ordered plan for execution")
 
     parser = add_training_args(parser)
 

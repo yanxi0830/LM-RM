@@ -56,14 +56,14 @@ class Tester:
             self.game_type = data['game_type']
             if self.game_type == "craftworld":
                 self.world = TesterCraftWorld(None, None, None, data['world'])
-            if self.game_type == "waterworld":
-                self.world = TesterWaterWorld(None, None, data['world'])
             if self.game_type == "officeworld":
                 self.world = TesterOfficeWorld(None, None, data['world'])
             if self.game_type == "keyboardworld":
                 self.world = TesterKeyboardWorld(None, None, data['world'])
             if self.game_type == "mouseworld":
                 self.world = TesterMouseWorld(None, data['world'])
+            if self.game_type == "farmworld":
+                self.world = TesterFarmWorld(None, None, data['world'])
 
             self.results = data['results']
             self.steps = data['steps']

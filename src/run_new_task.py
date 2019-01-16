@@ -59,7 +59,11 @@ if __name__ == "__main__":
     plan_file = args.plan_file
     rm_file_dest = args.rm_file_dest
 
-    new_task = Task(domain_file, prob_file, plan_file, rm_file_dest, world, use_partial_order=False)
+    strict = False
+    if world == "mouseworld" or world == "keyboardworld" or world == "farmworld":
+        strict = True
+
+    new_task = Task(domain_file, prob_file, plan_file, rm_file_dest, world, use_partial_order=False, strict=strict)
     print("world: " + world, "alg_name: " + alg_name, "experiment: " + experiment, "num_times: " + str(num_times),
           show_print)
 

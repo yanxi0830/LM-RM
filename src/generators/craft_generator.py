@@ -63,9 +63,9 @@ def format_problem(name, goals_list):
 
 
 if __name__ == "__main__":
-    NUM_TASKS = 200
-    LO = 3
-    HI = 17
+    NUM_TASKS = 153
+    LO = 1
+    HI = 2
     problem_bank = []
 
     for i in range(LO, HI+1):

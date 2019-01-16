@@ -380,6 +380,8 @@ def execute_plan_get_cost(curr_plan, tester, curriculum, options, option2file, p
     prop_idx = 0
     r_total = 0
     for t in range(tester.testing_params.num_steps):
+        if prop_idx >= len(curr_plan):
+            break
         macro_action = curr_plan[prop_idx]
         op_id = option2file.index(macro_action)
 
@@ -404,8 +406,11 @@ def execute_plan_get_cost(curr_plan, tester, curriculum, options, option2file, p
         if r > 0 and new_task_rm.is_terminal_state(u2):
             return t+1, r_total
 
-        if u2 != u1:
+        desired_next_state = new_task_rm.get_next_state(u1, macro_action)
+        if u2 == desired_next_state:
             prop_idx += 1
+        elif u2 != u1:
+            return np.inf, 0
 
         # Moving to the next state
         s1, s1_features, u1 = s2, s2_features, u2

@@ -19,11 +19,10 @@ def compute_rm_from_graph(lm_graph, merge_init_nodes=True):
     :param merge_init_nodes: bool
     :return: set of RewardMachine
     """
-    # 1. Do we want to combine all initial state nodes
     if merge_init_nodes:
         lm_graph.merge_init_nodes()
 
-    # 2. For each landmark node that is not the initial state, create a RM for it
+    # For each landmark node that is not the initial state, create a RM for it
     reward_machines = set()
     for n_id, n in lm_graph.nodes.items():
         if not n.in_init():
@@ -39,7 +38,6 @@ def compute_rm_from_graph(lm_graph, merge_init_nodes=True):
                 # look at parent landmarks that must be achieved before current landmark,
                 for p_id in curr_node.parents:
                     # add a transition from parent to current
-                    # TODO: label the true transition with actual dnf_formula and add self-loops
                     reward = 0
                     if curr_node == n:
                         reward = 1
@@ -81,19 +79,10 @@ def compute_rm_from_graph2(lm_graph, world, merge_init_nodes=True):
             if n.disjunctive:
                 raise NotImplementedError("Disjunctive Facts:", n.facts)
 
-            strict = False
-            if world == "mouseworld" or world == "keyboardworld":
-                strict = True
+            strict = True if world != "craftworld" else False
+
             new_rm = get_partial_ordered_rm(lm_graph.file_params, n, world, strict=strict)
 
             reward_machines.add(new_rm)
 
     return reward_machines
-
-
-if __name__ == "__main__":
-    lm_graph = LandmarkGraph(FileParams('../domains/office/domain.pddl', '../domains/office/t4.pddl'))
-    compute_rm_from_graph2(lm_graph)
-    # compute_rm_from_graph(lm_graph)
-    # print(lm_graph.nodes)
-    # lm_graph.show_network()

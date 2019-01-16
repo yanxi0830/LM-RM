@@ -31,6 +31,7 @@ CRAFT_EVENT2PROP = {
 KEYBOARD_EVENTS = [e for e in 'abcdefghijklmnopqrstuvwxyzC']
 CRAFT_EVENTS = [e for e in 'abcdefgh']
 OFFICE_EVENTS = [e for e in 'abcdefg']
+FARM_EVENTS = [e for e in 'abcdef']
 
 
 def mouse_world_action_to_prop(action):
@@ -130,5 +131,7 @@ def get_all_events(world):
         return CRAFT_EVENTS
     if world == "officeworld":
         return OFFICE_EVENTS
+    if world == "farmworld":
+        return FARM_EVENTS
 
     raise NotImplementedError(world + " is not supported")

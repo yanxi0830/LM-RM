@@ -28,6 +28,17 @@ def get_generalization_performance(alg_name, tester, curriculum, num_times, new_
         return get_hrl_generalization_performance(alg_name, tester, curriculum, num_times, new_tasks, show_print, False)
 
 
+def get_params(world, experiment):
+    if world == "officeworld":
+        return get_params_office_world(experiment)
+    if world == "farmworld":
+        return get_params_farm_world(experiment)
+    if world == "craftworld":
+        return get_params_craft_world(experiment)
+
+    raise NotImplementedError()
+
+
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(prog="run_new_task",
@@ -54,17 +65,19 @@ if __name__ == "__main__":
 
     success_count = 0
     new_tasks = []
+    use_partial = args.use_partial is not None
     for i, prob_file in enumerate(tasks):
         prob_file = "{}/{}".format(folder, prob_file)
         plan_file = prob_file.replace("pddl", "plan")
         rm_file_dest = "../experiments/{}/reward_machines/new_{}.txt".format(world[:-5], i)
-        new_task = Task(domain_file, prob_file, plan_file, rm_file_dest, world, use_partial_order=False)
+        new_task = Task(domain_file, prob_file, plan_file, rm_file_dest, world, use_partial_order=use_partial)
         new_tasks.append(new_task)
 
-    testing_params, learning_params, tester, curriculum = get_params_office_world(experiment)
+    testing_params, learning_params, tester, curriculum = get_params(world, experiment)
     success_rate, acc_reward = get_generalization_performance(alg_name, tester, curriculum, num_times, new_tasks, show_print)
 
     print("=====================")
     print("Algorithm:", alg_name)
+    print("Use Partial:", use_partial)
     print("Number of Tasks:", len(new_tasks))
     print("Generalization Performance:", success_rate, "Cumulative Reward:", acc_reward)

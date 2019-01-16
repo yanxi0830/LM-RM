@@ -5,7 +5,7 @@
 	(:init
 	)
 	(:goal (and
-    (have-wings)
+    (have-beef)
 		)
 	)
 )

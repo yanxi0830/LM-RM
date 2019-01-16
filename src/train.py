@@ -222,10 +222,10 @@ def get_params_farm_world(experiment):
     # Setting the curriculum learner
     curriculum = CurriculumLearner(tester.get_task_rms())
     curriculum.num_steps = 300
-    curriculum.total_steps = 2000 * step_unit
+    curriculum.total_steps = 1500 * step_unit
     curriculum.min_steps = 1
 
-    print("Water World ----------")
+    print("Farm World ----------")
     print("lr:", learning_params.lr)
     print("batch_size:", learning_params.batch_size)
     print("num_hidden_layers:", learning_params.num_hidden_layers)

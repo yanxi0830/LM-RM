@@ -5,11 +5,11 @@ import os, argparse
 import matplotlib.pyplot as plt
 
 
-def export_results_water_world():
+def export_results_farm_world():
     # NOTE: We do not report performance on Map 0 because we used it as our validation map
-    maps = ["farm_%d" % i for i in range(1, 11)]
+    maps = ["farm_%d" % i for i in [0]]
 
-    world = "farmfarm"
+    world = "farm"
     tmp_folder = "../tmp/"
     algs = ["dqn", "hrl", "hrl-rm", "qrm"]
 
@@ -49,11 +49,28 @@ def export_results_water_world():
         folder_out = os.path.join("../tmp/results", world)
         if not os.path.exists(folder_out): os.makedirs(folder_out)
         f_out = open(os.path.join(folder_out, alg + ".txt"), "w")
+
+        # Plot final stats
+        steps = []
+        rewards = []
+
         for i in range(len(results[alg])):
             step, reward = results[alg][i]
             p25, p50, p75 = get_precentiles(np.concatenate(reward))
             f_out.write(str(step) + "\t" + str(p25) + "\t" + str(p50) + "\t" + str(p75) + "\n")
+
+            steps.append(int(step))
+            rewards.append(float(p50))
+
         f_out.close()
+        plt.plot(steps, rewards, label=alg)
+        plt.xlabel("Episode")
+        plt.ylabel("Normalized discounted reward")
+        plt.legend()
+
+    plt.grid(linestyle='--')
+    plt.savefig('training-curve-farm')
+    plt.show()
 
 
 def export_results_tabular_world(world, maps):
@@ -123,7 +140,7 @@ if __name__ == "__main__":
     # EXAMPLE: python3 export_summary.py --world="craft"
 
     # Getting params
-    worlds = ["office", "craft", "farmfarm"]
+    worlds = ["office", "craft", "farm"]
 
     parser = argparse.ArgumentParser(prog="export_summary",
                                      description='After running the experiments, this algorithm computes a summary of the results.')
@@ -139,5 +156,5 @@ if __name__ == "__main__":
         export_results_office_world()
     if world == "craft":
         export_results_craft_world()
-    if world == "farmfarm":
-        export_results_water_world()
+    if world == "farm":
+        export_results_farm_world()

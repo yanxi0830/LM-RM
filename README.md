@@ -61,3 +61,11 @@ Given a new task presented in terms of the high-level model, we compute a partia
 
 python run_new_tasks.py --world="office" --domain_file="../domains/office/domain.pddl" --prob_file "../domains/office/t4.pddl" --plan_file="../domains/office/t4.plan"
 ```
+
+#### Generalization Test
+```bash
+python farm_generator.py
+cd scripts
+./plan_all.sh ../domains/farm/tasks
+python generalization_tests.py --world="farm" --map=0 --algorithm="hrl-rm" --use_partial=0
+```
