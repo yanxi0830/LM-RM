@@ -33,13 +33,13 @@ cd scripts
 
 Now, modify `model/ENV/checkpoint` and use `generalization_test.py` to evaluate the generalization performance on the set of random tasks for each algorithm. For example, to evaluate the performance using "QRM" on "craft" tasks:
 
-Make sure the [checkpoint](model/craftworld/map_0/checkpoint) file points to "qrm" (or "hrl", "hrl-rm"). 
+- Make sure the [checkpoint](model/craftworld/map_0/checkpoint) file points to "qrm" (or "hrl", "hrl-rm"). 
 ```
 model_checkpoint_path: "qrm"
 all_model_checkpoint_paths: "qrm"
 ```
 
-`generalization_test.py` takes in an optional argument to choose whether or not partial-ordered plans should be used for execution:
+- `generalization_test.py` takes in an optional argument to choose whether or not partial-ordered plans should be used for execution:
 ```bash
 # Use sequential plans
 python generalization_tests.py --world="craft" --map=0 --algorithm="qrm"
